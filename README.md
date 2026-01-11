@@ -2,10 +2,10 @@
 
 # 🔧 ReVanced Non-Root Builder
 
-[![Daily Build](https://img.shields.io/github/actions/workflow/status/sarthaksinha2800-cell/revanced-nonroot/patch.yml?label=Daily%20Build&style=for-the-badge&color=2ea44f)](https://github.com/sarthaksinha2800-cell/revanced-nonroot/actions/workflows/patch.yml)
-[![Latest Release](https://img.shields.io/github/v/release/sarthaksinha2800-cell/revanced-nonroot?style=for-the-badge&label=Latest%20Release&color=0366d6)](https://github.com/sarthaksinha2800-cell/revanced-nonroot/releases/latest)
+[![Daily Build](https://img.shields.io/github/actions/workflow/status/RookieEnough/Revanced-AutoBuilds/patch.yml?label=Daily%20Build&style=for-the-badge&color=2ea44f)](https://github.com/RookieEnough/Revanced-AutoBuilds/actions/workflows/patch.yml)
+[![Latest Release](https://img.shields.io/github/v/release/RookieEnough/Revanced-AutoBuilds?style=for-the-badge&label=Latest%20Release&color=0366d6)](https://github.com/RookieEnough/Revanced-AutoBuilds/releases/latest)
 [![Python Version](https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/github/license/sarthaksinha2800-cell/revanced-nonroot?style=for-the-badge&color=orange)](LICENSE)
+[![License](https://img.shields.io/github/license/RookieEnough/Revanced-AutoBuilds?style=for-the-badge&color=orange)](LICENSE)
 
 <p align="center">
   <strong>Professional, Automated ReVanced APK Builder</strong><br>
