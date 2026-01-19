@@ -95,15 +95,18 @@ jobs:
             exit 1
           fi
           
-          # Create a list of APK files
-          apk_list=""
-          for apk in $apk_files; do
-            echo "Found APK: $apk"
-            apk_list="$apk_list $apk"
-          done
+          # Fix for multi-line output in GitHub Actions
+          {
+            echo "apk_files<<EOF"
+            echo "$apk_files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
           
-          echo "apk_files=${apk_files}" >> $GITHUB_OUTPUT
-          echo "apk_count=$(echo "$apk_files" | wc -l)" >> $GITHUB_OUTPUT
+          echo "apk_count=$(echo "$apk_files" | wc -l)" >> "$GITHUB_OUTPUT"
+          
+          # Print for debugging
+          echo "Found these APKs:"
+          echo "$apk_files"
       
       - name: Upload as Artifact
         uses: actions/upload-artifact@v4
