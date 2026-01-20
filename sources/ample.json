@@ -1,15 +1,15 @@
 [
     {
-        "name": "ample"
+        "name": "amplerevanced"
     },
     {
         "user": "revanced",
         "repo": "revanced-cli",
-        "tag": "latest"
+        "tag": ""
     },
     {
         "user": "AmpleReVanced",
         "repo": "revanced-patches",
-        "tag": "latest"
+        "tag": ""
     }
 ]
