@@ -1,0 +1,15 @@
+[
+    {
+        "name": "andronedev"
+    },
+    {
+        "user": "revanced",
+        "repo": "revanced-cli",
+        "tag": "latest"
+    },
+    {
+        "user": "andronedev",
+        "repo": "revanced-patches",
+        "tag": "latest"
+    }
+]
