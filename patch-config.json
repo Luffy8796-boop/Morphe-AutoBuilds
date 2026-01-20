@@ -35,6 +35,7 @@
     { "app_name": "lingory", "source": "custom-patches" },
     { "app_name": "teuida", "source": "custom-patches" },
     { "app_name": "ttmik-stories", "source": "custom-patches" },
+    { "app_name": "calistree", "source": "custom-patches" },
     { "app_name": "webster", "source": "custom-patches" }
     
   ]
