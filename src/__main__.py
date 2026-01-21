@@ -19,24 +19,18 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
     revanced_cli = utils.find_file(download_files, 'revanced-cli', '.jar')
     revanced_patches = next((f for f in download_files if f.suffix == '.rvp'), None)
 
-    # --- Automatic CLI switch for newer patches ---
+    # Detect patch version for logging purposes only
     if revanced_patches:
-        # Parse version from filename (e.g., "5.47.0" from "patches-5.47.0-ample.2.rvp")
         version_match = re.search(r'(\d+\.\d+(\.\d+)?)', revanced_patches.name)
         if version_match:
             version_str = version_match.group(1)
             major_version = int(version_str.split('.')[0])
             if major_version >= 5:
-                logging.info(f"Newer patches v{version_str} detected — downloading compatible community CLI...")
-                # Community fork with updated libraries for v5+ patches (widely used in auto-builds)
-                newer_cli_url = "https://github.com/j-hc/revanced-cli/releases/download/v5.0.0/revanced-cli-all.jar"
-                revanced_cli = downloader.download_resource(newer_cli_url, "revanced-cli-community.jar")
-                logging.info("Switched to community CLI for better compatibility")
+                logging.info(f"Patches v{version_str} detected — using CLI v5+ compatible syntax")
             else:
-                logging.info(f"Older patches v{version_str} detected — using standard CLI")
-                # Keep your original CLI
+                logging.info(f"Patches v{version_str} detected")
         else:
-            logging.warning("Could not parse patches version — using standard CLI")
+            logging.warning("Could not parse patches version from filename")
 
     download_methods = [
         downloader.download_apkmirror,
@@ -149,6 +143,7 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
     output_apk = Path(f"{app_name}-{arch}-patch-v{version}.apk")
 
     # CRITICAL FIX: Use -p instead of --patches for CLI v5.0+
+    # The CLI v5.0+ uses -p flag, while v4.x used --patches
     patch_command = [
         "java", "-jar", str(revanced_cli),
         "patch", "-p", str(revanced_patches),  # Changed from --patches to -p
@@ -156,7 +151,7 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
         *exclude_patches, *include_patches
     ]
     
-    logging.info(f"Running patch command: {' '.join(str(x) for x in patch_command)}")
+    logging.info(f"Running patch command with CLI v5+ syntax...")
     
     utils.run_process(patch_command, stream=True)
 
