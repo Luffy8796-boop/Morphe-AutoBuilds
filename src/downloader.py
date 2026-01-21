@@ -1,5 +1,7 @@
 import json
 import logging
+import subprocess
+import re
 from pathlib import Path
 from src import (
     utils,
@@ -55,24 +57,46 @@ def download_required(source: str) -> tuple[list[Path], str]:
 
     return downloaded_files, name
 
+def get_smart_version(package: str, cli: Path, patches: Path) -> str | None:
+    """
+    Locally determines the supported version, handling the syntax difference
+    between ReVanced CLI v4 and v5.
+    """
+    try:
+        # Detect if using CLI v5 based on filename (common convention)
+        is_cli_v5 = "cli-5" in str(cli.name) or "cli-v5" in str(cli.name)
+        
+        cmd = ["java", "-jar", str(cli), "list-versions"]
+        
+        if is_cli_v5:
+            # CLI v5: Patches file MUST come before flags
+            cmd.extend([str(patches), "-f", package])
+        else:
+            # CLI v4: Flags can come before patches
+            cmd.extend(["-f", package, str(patches)])
+
+        # Run the command and capture output
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            check=True
+        )
+        
+        # The output usually contains the version on the last non-empty line
+        output_lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        if output_lines:
+            return output_lines[-1]
+            
+    except subprocess.CalledProcessError as e:
+        logging.warning(f"Version detection failed: {e}")
+        logging.debug(f"Command output: {e.stderr}")
+    except Exception as e:
+        logging.warning(f"Error checking version: {e}")
+        
+    return None
+
 def download_platform(app_name: str, platform: str, cli: str, patches: str, arch: str = None) -> tuple[Path | None, str | None]:
-    """
-    Download APK from a specific platform.
-    
-    Args:
-        app_name: Name of the app
-        platform: Platform name (apkmirror, apkpure, uptodown)
-        cli: Path to CLI jar
-        patches: Path to patches file
-        arch: Architecture (optional)
-    
-    Returns:
-        Tuple of (filepath, version) or (None, None) if failed
-    
-    Raises:
-        FileNotFoundError: If config file doesn't exist
-        Exception: For other errors
-    """
     try:
         config_path = Path("apps") / platform / f"{app_name}.json"
         if not config_path.exists():
@@ -85,58 +109,37 @@ def download_platform(app_name: str, platform: str, cli: str, patches: str, arch
         if arch:
             config['arch'] = arch
 
-        # Get version from config or determine supported version
+        # Priority: 
+        # 1. Hardcoded in config
+        # 2. Detected via CLI (using local smart function instead of utils.py)
+        # 3. Latest from platform
         version = config.get("version")
         
-        # If version is empty string or None, determine it
         if not version:
-            # First try to get supported version from patches
-            try:
-                version = utils.get_supported_version(config['package'], cli, patches)
-                logging.info(f"Determined supported version from patches: {version}")
-            except Exception as e:
-                logging.debug(f"Could not determine version from patches: {e}")
-                version = None
-        
-        # If still no version, try to get latest from platform
-        if not version:
-            platform_module = globals()[platform]
-            version = platform_module.get_latest_version(app_name, config)
-            logging.info(f"Using latest version from {platform}: {version}")
-        
-        # If STILL no version, this is a problem
-        if not version:
-            raise ValueError(f"Could not determine version for {app_name} on {platform}")
-        
+            logging.info("Auto-detecting supported version...")
+            version = get_smart_version(config['package'], cli, patches)
+            if version:
+                logging.info(f"Detected supported version: {version}")
+
         platform_module = globals()[platform]
+        version = version or platform_module.get_latest_version(app_name, config)
+        
         download_link = platform_module.get_download_link(version, app_name, config)
-        
-        if not download_link:
-            raise ValueError(f"Could not get download link for {app_name} v{version} on {platform}")
-        
-        logging.info(f"Downloading {app_name} v{version} from {platform}...")
         filepath = download_resource(download_link)
-        
         return filepath, version 
 
-    except FileNotFoundError as e:
-        # Re-raise FileNotFoundError so caller can handle it
-        raise
     except Exception as e:
-        logging.error(f"Error downloading from {platform}: {e}")
+        logging.error(f"Unexpected error: {e}")
         return None, None
 
 # Update the specific download functions
 def download_apkmirror(app_name: str, cli: str, patches: str, arch: str = None) -> tuple[Path | None, str | None]:
-    """Download from APKMirror. Raises FileNotFoundError if config missing."""
     return download_platform(app_name, "apkmirror", cli, patches, arch)
 
 def download_apkpure(app_name: str, cli: str, patches: str, arch: str = None) -> tuple[Path | None, str | None]:
-    """Download from APKPure. Raises FileNotFoundError if config missing."""
     return download_platform(app_name, "apkpure", cli, patches, arch)
 
 def download_uptodown(app_name: str, cli: str, patches: str, arch: str = None) -> tuple[Path | None, str | None]:
-    """Download from Uptodown. Raises FileNotFoundError if config missing."""
     return download_platform(app_name, "uptodown", cli, patches, arch)
 
 def download_apkeditor() -> Path:
