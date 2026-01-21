@@ -12,7 +12,6 @@
     { "app_name": "duolingo", "source": "custom-patches" },
     { "app_name": "google-news", "source": "revanced" },
     { "app_name": "messenger", "source": "revanced" },
-    { "app_name": "lightroom", "source": "revanced" },
     { "app_name": "spotify", "source": "revanced" },
     { "app_name": "photomath", "source": "revanced" },
     { "app_name": "pixiv", "source": "revanced" },
@@ -31,7 +30,6 @@
     { "app_name": "avocards", "source": "custom-patches" },
     { "app_name": "cake", "source": "custom-patches" },
     { "app_name": "eggbun", "source": "custom-patches" },
-    { "app_name": "guess-the-country", "source": "custom-patches" },
     { "app_name": "lingory", "source": "custom-patches" },
     { "app_name": "teuida", "source": "custom-patches" },
     { "app_name": "ttmik-stories", "source": "custom-patches" },
@@ -45,7 +43,14 @@
     { "app_name": "hevy", "source": "brosssh" },
     { "app_name": "geocaching", "source": "brosssh" },
     { "app_name": "nova", "source": "dropped" },
-    { "app_name": "earphone", "source": "tosox" }
+    { "app_name": "earphone", "source": "tosox" },
+    { "app_name": "flatastic", "source": "tosox" },
+    { "app_name": "kicker", "source": "tosox" },
+    { "app_name": "ticktick", "source": "tosox" },
+    { "app_name": "splitwise", "source": "burgers" },
+    { "app_name": "ticktick", "source": "tosox" },
+    { "app_name": "fxfile", "source": "dropped" },
+    { "app_name": "dialer", "source": "taknok" }
     
   ]
 }
