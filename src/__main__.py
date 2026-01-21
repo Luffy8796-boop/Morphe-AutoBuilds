@@ -18,12 +18,6 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
     revanced_cli = utils.find_file(download_files, 'revanced-cli', '.jar')
     revanced_patches = next((f for f in download_files if f.suffix == '.rvp'), None)
 
-    if revanced_patches is None:
-        logging.error("No .rvp patches file found!")
-        logging.info("Downloaded files were:")
-        for f in download_files:
-        logging.info(f" - {f.name}")
-
     download_methods = [
         downloader.download_apkmirror,
         downloader.download_apkpure,
