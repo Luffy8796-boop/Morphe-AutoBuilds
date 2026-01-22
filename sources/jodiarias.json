@@ -1,6 +1,6 @@
 [
     {
-        "name": "mirai-patches"
+        "name": "revanced-patches"
     },
     {
         "user": "inotia00",
@@ -8,8 +8,8 @@
         "tag": "latest"
     },
     {
-        "user": "baongoquoc2011",
-        "repo": "mirai",
+        "user": "jodiarias",
+        "repo": "revanced-patches",
         "tag": "latest"
     }
 ]
