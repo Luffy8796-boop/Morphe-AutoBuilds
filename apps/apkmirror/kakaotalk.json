@@ -1,9 +1,9 @@
 {
     "org": "kakao-corp",
     "name": "kakaotalk",
-    "type": "APK", 
-    "arch": "universal",
-    "dpi": "nodpi",
+    "type": "", 
+    "arch": "",
+    "dpi": "",
     "package" : "com.kakao.talk",
     "version" : ""
 }
