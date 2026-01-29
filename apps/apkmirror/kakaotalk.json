@@ -1,1 +1,1 @@
-{"org": "kakao-corp", "name":"kakaotalk", "release_prefix": "kakaotalk-messenger", "type": "apk", "arch": "universal", "dpi": ['120','160','213','240','320','480','640'], "min_api": "minapi-29"}
+{"org": "kakao-corp", "name":"kakaotalk", "release_prefix": "kakaotalk-messenger", "type": "apk", "arch": "universal", "dpi": ["120","160","213","240","320","480","640"], "min_api": "minapi-29"}
