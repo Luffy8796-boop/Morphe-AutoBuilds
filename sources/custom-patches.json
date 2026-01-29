@@ -3,13 +3,13 @@
       "name": "custom-patches"
     },
     {
-      "user": "revanced",
-      "repo": "revanced-cli",
+      "user": "MorpheApp",
+      "repo": "morphe-cli",
       "tag": "latest"
     },
     {
       "user": "hoo-dles",
-      "repo": "revanced-custom-patches",
+      "repo": "morphe-patches",
       "tag": "latest"
     }
 ]
