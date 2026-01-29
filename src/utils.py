@@ -34,6 +34,23 @@ def find_file(files: list[Path], prefix: str = None, suffix: str = None, contain
         if matches:
             return file
     
+    # If not found with exclude, try without exclude (for fallback)
+    if exclude:
+        for file in files:
+            matches = True
+            
+            if prefix and not file.name.startswith(prefix):
+                matches = False
+                
+            if suffix and not file.name.endswith(suffix):
+                matches = False
+                
+            if contains and contains.lower() not in file.name.lower():
+                matches = False
+                
+            if matches:
+                return file
+    
     return None
 
 def find_apksigner() -> str | None:
