@@ -2,18 +2,39 @@ import re
 import logging
 import cgi
 import json
-from typing import List, Optional
+from typing import List, Optional, Union
 from src import gh
 from sys import exit
 import subprocess
 from pathlib import Path
 from urllib.parse import urlparse, unquote, parse_qs
 
-def find_file(files: list[Path], prefix: str, suffix: str) -> Path | None:
-    return next(
-        (f for f in files if f.name.startswith(prefix) and f.name.endswith(suffix)),
-        None
-    )
+def find_file(files: list[Path], prefix: str = None, suffix: str = None, contains: str = None, exclude: list = None) -> Path | None:
+    """Find a file with various matching criteria"""
+    if exclude is None:
+        exclude = []
+    
+    for file in files:
+        # Skip excluded patterns
+        if any(excl.lower() in file.name.lower() for excl in exclude):
+            continue
+            
+        # Check all criteria
+        matches = True
+        
+        if prefix and not file.name.startswith(prefix):
+            matches = False
+            
+        if suffix and not file.name.endswith(suffix):
+            matches = False
+            
+        if contains and contains.lower() not in file.name.lower():
+            matches = False
+            
+        if matches:
+            return file
+    
+    return None
 
 def find_apksigner() -> str | None:
     sdk_root = Path("/usr/local/lib/android/sdk")
@@ -180,3 +201,11 @@ def detect_github_release(user: str, repo: str, tag: str) -> dict:
     except Exception as e:
         logging.error(f"Error fetching release {tag} for {user}/{repo}: {e}")
         raise
+
+def detect_source_type(cli_file: Path, patches_file: Path) -> str:
+    """Detect if we're using Morphe or ReVanced based on downloaded files"""
+    if cli_file and "morphe" in cli_file.name.lower() and patches_file and patches_file.suffix == ".mpp":
+        return "morphe"
+    elif cli_file and "revanced" in cli_file.name.lower() and patches_file and patches_file.suffix in [".jar", ".rvp"]:
+        return "revanced"
+    return "unknown"
