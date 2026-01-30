@@ -33,7 +33,7 @@
     { "app_name": "lingory", "source": "hoo" },
     { "app_name": "teuida", "source": "hoo" },
     { "app_name": "ttmik-stories", "source": "hoo" },
-    { "app_name": "calistree", "source": "custom-patches" },
+    { "app_name": "calistree", "source": "brosssh" },
     { "app_name": "webster", "source": "hoo" },
     { "app_name": "chargeprice", "source": "brosssh" },
     { "app_name": "mapy", "source": "brosssh" },
@@ -54,6 +54,7 @@
     { "app_name": "mladinska", "source": "blazskufca" },
     { "app_name": "fxfile", "source": "dropped" },
     { "app_name": "myftinesspal", "source": "hoo" },
+    { "app_name": "pokecardex", "source": "areteruhiro" },
     { "app_name": "dialer", "source": "taknok" }
     
   ]
