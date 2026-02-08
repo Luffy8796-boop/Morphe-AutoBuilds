@@ -55,6 +55,7 @@
     { "app_name": "fxfile", "source": "dropped" },
     { "app_name": "myfitnesspal", "source": "hoo" },
     { "app_name": "smart_launcher", "source": "hoo" },
+    { "app_name": "podcast", "source": "hoo" },
     { "app_name": "ibs_paint", "source": "hoo" },
     { "app_name": "pokecardex", "source": "almewty" },
     { "app_name": "gamehub", "source": "liaralabs" },
