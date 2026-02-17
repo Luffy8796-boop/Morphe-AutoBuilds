@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(mes
 
 def create_scraper_session(proxy_url=None):
     """Create a cloudscraper session with browser-like headers and optional proxy."""
-    scraper = cloudscraper.create_scraper()
+    scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False})
     scraper.headers.update({
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -37,7 +37,8 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
         scraper = create_scraper_session()
     
     target_arch = arch if arch else config.get('arch', 'universal')
-    criteria = [config['type'], target_arch, config['dpi']]
+    # Exclude 'type' from variant criteria since it's not consistently in row_text; use for URL/validation if needed
+    criteria = [target_arch, config['dpi']]
     
     # --- UNIVERSAL URL FINDER WITH VALIDATION ---
     version_parts = version.split('.')
@@ -93,11 +94,13 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
                     headings = soup.find_all(['h1', 'h2', 'h3'])
                     
                     title_text = title_tag.get_text() if title_tag else ""
+                    heading_texts = [h.get_text() for h in headings]
                     
-                    # Stricter check: Require full version in title or headings
+                    # Stricter check: Require full version in title, headings, or page_text
+                    sources = [page_text, title_text] + heading_texts
                     is_correct_page = any(
                         any(check in src for check in full_version_checks)
-                        for src in [title_text] + [h.get_text() for h in headings]
+                        for src in sources
                     )
                     
                     # Fallback to partial if no full match, but log
@@ -105,10 +108,17 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
                         partial_checks = [current_ver_str, ".".join(version_parts[:i])]
                         is_correct_page = any(
                             any(check in src for check in partial_checks if check)
-                            for src in [page_text, title_text] + [h.get_text() for h in headings]
+                            for src in sources
                         )
                         if is_correct_page:
                             logging.warning("Fallback to partial version match")
+                    
+                    # Debug logging for title and version presence
+                    logging.debug(f"Title: {title_text}")
+                    logging.debug(f"Full checks: {full_version_checks}")
+                    logging.debug(f"Partial checks: {partial_checks}")
+                    logging.debug(f"Version '8.40.54' in title: {'8.40.54' in title_text}")
+                    logging.debug(f"Version '8-40-54' in title: {'8-40-54' in title_text}")
                     
                     if is_correct_page:
                         content_size = len(response.content)
