@@ -3,102 +3,95 @@ import logging
 import time
 import random
 import cloudscraper
+from bs4 import BeautifulSoup
 
+# Base URL for APKMirror
 APKMIRROR_BASE = "https://www.apkmirror.com"
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s")
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
-def create_scraper_session(proxy_url=None):
-    scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False})
-    scraper.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Referer": "https://www.apkmirror.com/",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-User": "?1",
-    })
-    if proxy_url:
-        scraper.proxies = {"http": proxy_url, "https": proxy_url}
-    return scraper
+def get_download_link(version: str, app_name: str, config: dict, arch: str = None) -> str:
+    scraper = cloudscraper.create_scraper()
+    target_arch = arch if arch else config.get('arch', 'universal')
 
-def get_download_link(version: str, app_name: str, config: dict, arch: str = None, scraper=None) -> str:
-    if scraper is None:
-        scraper = create_scraper_session()
-
-    target_arch = (arch or config.get('arch', 'universal')).lower()
-    version_dash = version.replace('.', '-').lower()
+    # Step 1: Construct and load the release page
     release_name = config.get('release_prefix', config['name'])
-
-    # Load release page (only to confirm existence)
+    version_dash = version.replace('.', '-')
     release_url = f"{APKMIRROR_BASE}/apk/{config['org']}/{config['name']}/{release_name}-{version_dash}-release/"
-    logging.info(f"Loading release page: {release_url}")
-    time.sleep(3 + random.random())
-
-    try:
-        response = scraper.get(release_url)
-        response.encoding = 'utf-8'
-        response.raise_for_status()
-        logging.info(f"✓ Release page loaded")
-    except Exception as e:
-        logging.error(f"Release page failed: {e}")
+    logging.info(f"Checking release URL: {release_url}")
+    time.sleep(2 + random.random())
+    response = scraper.get(release_url)
+    response.encoding = 'utf-8'
+    if response.status_code != 200:
+        logging.error(f"Release URL failed: {response.status_code}")
         return None
+    soup = BeautifulSoup(response.text, "html.parser")
 
-    # Generate variant page URL
+    # Step 2: Find variant link for arch (new approach from project)
+    variant_url = None
     variant_map = {
         "arm64-v8a": "3",
         "armeabi-v7a": "4",
-        "x86": "5",
-        "x86_64": "6"
+        "universal": "3"
     }
     suffix = variant_map.get(target_arch, "3")
-    variant_url = f"{release_url.rstrip('/')}/{release_name}-{version_dash}-{suffix}-android-apk-download/"
-    logging.info(f"Generated variant page for {target_arch}: {variant_url}")
+    variant_href = f"{release_name}-{version_dash}-{suffix}-android-apk-download/"
+    for a in soup.find_all('a', href=True):
+        if variant_href in a['href']:
+            variant_url = APKMIRROR_BASE + a['href']
+            logging.info(f"Found variant URL: {variant_url}")
+            break
+    if not variant_url:
+        logging.error("No variant found")
+        return None
 
-    # Load variant page and extract the full final download link with ?key=...&forcebaseapk=true using RAW REGEX on page source (NO BUTTON, NO TAG FINDING)
-    try:
-        time.sleep(3 + random.random())
-        response = scraper.get(variant_url)
-        response.encoding = 'utf-8'
-        response.raise_for_status()
+    # Step 3: Load variant page and extract final download link with key (adapted from project)
+    time.sleep(2 + random.random())
+    response = scraper.get(variant_url)
+    response.encoding = 'utf-8'
+    if response.status_code != 200:
+        logging.error(f"Variant URL failed: {response.status_code}")
+        return None
+    soup = BeautifulSoup(response.text, "html.parser")
 
-        # RAW REGEX on the entire page source - finds the exact href you copied
-        match = re.search(r'href="([^"]*?forcebaseapk=true[^"]*?)"', response.text)
-        if match:
-            final_href = match.group(1)
-            final_url = APKMIRROR_BASE + final_href
-            logging.info(f"✅ SUCCESS - Final APK download URL (extracted via regex): {final_url}")
-            return final_url
-        else:
-            logging.error("No final download link found in page source")
+    final_url = None
+    for a in soup.find_all('a', href=True):
+        href = a['href']
+        if 'forcebaseapk=true' in href and 'key=' in href:
+            final_url = APKMIRROR_BASE + href
+            logging.info(f"Found final download URL: {final_url}")
+            break
+    if not final_url:
+        logging.error("No final download link found")
+        return None
 
-    except Exception as e:
-        logging.error(f"Variant page load failed: {e}")
-
-    logging.error("All methods failed")
-    return None
+    return final_url
 
 def get_architecture_criteria(arch: str) -> dict:
-    return {"arm64-v8a": "arm64-v8a", "armeabi-v7a": "armeabi-v7a", "universal": "universal"}.get(arch, "universal")
+    arch_mapping = {
+        "arm64-v8a": "arm64-v8a",
+        "armeabi-v7a": "armeabi-v7a",
+        "universal": "universal"
+    }
+    return arch_mapping.get(arch, "universal")
 
-def get_latest_version(app_name: str, config: dict, scraper=None) -> str:
-    if scraper is None:
-        scraper = create_scraper_session()
+def get_latest_version(app_name: str, config: dict) -> str:
+    scraper = cloudscraper.create_scraper()
     url = f"{APKMIRROR_BASE}/uploads/?appcategory={config['name']}"
-    time.sleep(3 + random.random())
+    time.sleep(2 + random.random())
     response = scraper.get(url)
     response.encoding = 'utf-8'
-    response.raise_for_status()
+    if response.status_code != 200:
+        logging.error(f"Latest version URL failed: {response.status_code}")
+        return None
     soup = BeautifulSoup(response.text, "html.parser")
-    for row in soup.find_all("div", class_="appRow"):
-        txt = row.find("h5", class_="appRowTitle").a.text.strip()
-        if "alpha" not in txt.lower() and "beta" not in txt.lower():
-            m = re.search(r'\d+(\.\d+)+', txt)
-            if m:
-                return m.group()
+    app_rows = soup.find_all("div", class_="appRow")
+    version_pattern = re.compile(r'\d+(\.\d+)+')
+    for row in app_rows:
+        title = row.find("h5", class_="appRowTitle").a.text.strip()
+        if "alpha" not in title.lower() and "beta" not in title.lower():
+            match = version_pattern.search(title)
+            if match:
+                return match.group()
     return None
