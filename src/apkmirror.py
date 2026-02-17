@@ -129,7 +129,7 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
         return None
     
     # --- VARIANT FINDER (works with both exact pages and fallback pages) ---
-    rows = found_soup.find_all('div', class_='table-row headerFont')
+    rows = found_soup.find_all('div', class_='table-row')[1:]  # Skip header row
     download_page_url = None
     
     # Try to find exact version match first
@@ -188,33 +188,13 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
             soup = BeautifulSoup(response.content, "html.parser")
 
             button = soup.find('a', id='download-link')
+            if not button:
+                button = soup.find('a', href=lambda h: h and 'download/' in h and 'forcebaseapk' in h)
             if button:
                 return base_url + button['href']
     except Exception as e:
         logging.error(f"Error in download flow: {e}")
     
-    return None
-
-    # --- STANDARD DOWNLOAD FLOW (Page 2 -> Page 3 -> Link) ---
-    response = session.get(download_page_url)
-    response.raise_for_status()
-    content_size = len(response.content)
-    logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> Variant Page")
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    sub_url = soup.find('a', class_='downloadButton')
-    if sub_url:
-        final_download_page_url = base_url + sub_url['href']
-        response = session.get(final_download_page_url)
-        response.raise_for_status()
-        content_size = len(response.content)
-        logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> Download Page")
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        button = soup.find('a', id='download-link')
-        if button:
-            return base_url + button['href']
-
     return None
 
 def get_architecture_criteria(arch: str) -> dict:
