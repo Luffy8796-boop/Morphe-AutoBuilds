@@ -4,6 +4,9 @@ import time
 import random
 import cloudscraper
 from bs4 import BeautifulSoup
+from src import session
+
+base_url = "https://www.apkmirror.com"
 
 # Base URL for APKMirror
 APKMIRROR_BASE = "https://www.apkmirror.com"
