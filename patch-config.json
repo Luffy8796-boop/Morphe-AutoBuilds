@@ -2,6 +2,7 @@
   "patch_list": [
     { "app_name": "tiktok", "source": "revanced" },
     { "app_name": "youtube", "source": "morphe" },
+    { "app_name": "youtube-music", "source": "morphe" },
     { "app_name": "reddit", "source": "revanced-extended" },
     { "app_name": "x", "source": "piko" },
     { "app_name": "soundcloud", "source": "revanced" },
