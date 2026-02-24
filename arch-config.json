@@ -6,7 +6,7 @@
   },
   {
     "app_name": "google-photos",
-    "source": "revanced",
+    "source": "revanced-dev",
     "arches": ["arm64-v8a", "armeabi-v7a"]
   },
   {
