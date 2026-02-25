@@ -6,7 +6,7 @@
     { "app_name": "reddit", "source": "morphe" },
     { "app_name": "x", "source": "piko" },
     { "app_name": "soundcloud", "source": "revanced" },
-    { "app_name": "google-photos", "source": "revanced-beta" },
+    { "app_name": "google-photos", "source": "revanced-dev" },
     { "app_name": "disney-plus", "source": "revanced" },
     { "app_name": "facebook", "source": "revanced" },
     { "app_name": "duolingo", "source": "custom-patches" },
