@@ -1,0 +1,9 @@
+{
+    "org": "busuu"
+    "name": "busuu-learn-languages",
+    "type": "APK", 
+    "arch": "universal",
+    "dpi": "nodpi",
+    "package" : "com.busuu.android.enc",
+    "version" : ""
+}
