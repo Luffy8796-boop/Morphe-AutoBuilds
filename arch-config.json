@@ -33,5 +33,40 @@
     "app_name": "youtube",
     "source": "morphe",
     "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "reddit",
+    "source": "morphe",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "proton-vpn",
+    "source": "hoo",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "telegram",
+    "source": "aunali321",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "trakt",
+    "source": "tosox",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "letterboxd",
+    "source": "ample",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "solid",
+    "source": "hoo",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "wps-office",
+    "source": "hoo",
+    "arches": ["arm64-v8a"]
   }
 ]
