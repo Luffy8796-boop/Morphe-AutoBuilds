@@ -2,12 +2,12 @@
   {
     "app_name": "youtube-music",
     "source": "morphe",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "arches": ["arm64-v8a"]
   },
   {
     "app_name": "google-photos",
     "source": "revanced-dev",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
+    "arches": ["arm64-v8a"]
   },
   {
     "app_name": "cake",
@@ -28,5 +28,10 @@
     "app_name": "messenger",
     "source": "revanced",
     "arches": ["arm64-v8a", "armeabi-v7a"]
+  },
+  {
+    "app_name": "youtube",
+    "source": "morphe",
+    "arches": ["arm64-v8a"]
   }
 ]
