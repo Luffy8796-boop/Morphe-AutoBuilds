@@ -73,5 +73,10 @@
     "app_name": "x",
     "source": "piko",
     "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "proton-mail",
+    "source": "rookie",
+    "arches": ["arm64-v8a"]
   }
 ]
