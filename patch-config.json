@@ -14,7 +14,6 @@
     { "app_name": "solid", "source": "hoo" },
     { "app_name": "wps-office", "source": "hoo" },
     { "app_name": "phone", "source": "taknok" },
-    { "app_name": "pokecardex", "source": "almewty" },
-    
+    { "app_name": "pokecardex", "source": "almewty" }
   ]
 }
