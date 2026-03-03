@@ -10,11 +10,6 @@
     "arches": ["arm64-v8a"]
   },
   {
-    "app_name": "cake",
-    "source": "custom-patches",
-    "arches": ["arm64-v8a"]
-  },
-  {
     "app_name": "phone",
     "source": "taknok",
     "arches": ["arm64-v8a"]
@@ -22,11 +17,6 @@
   {
     "app_name": "pokecardex",
     "source": "almewty",
-    "arches": ["arm64-v8a"]
-  },
-  {
-    "app_name": "messenger",
-    "source": "revanced",
     "arches": ["arm64-v8a"]
   },
   {
@@ -77,6 +67,11 @@
   {
     "app_name": "proton-mail",
     "source": "rookie",
+    "arches": ["arm64-v8a"]
+  },
+  {
+    "app_name": "duolingo",
+    "source": "hoo",
     "arches": ["arm64-v8a"]
   }
 ]
