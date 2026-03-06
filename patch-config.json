@@ -13,7 +13,8 @@
     { "app_name": "letterboxd", "source": "ample" },
     { "app_name": "solid", "source": "hoo" },
     { "app_name": "wps-office", "source": "hoo" },
-    { "app_name": "phone", "source": "taknok" },
-    { "app_name": "pokecardex", "source": "almewty" }
+    { "app_name": "dialer", "source": "taknok" },
+    { "app_name": "pokecardex", "source": "almewty" },
+    { "app_name": "webster", "source": "hoo" }
   ]
 }
