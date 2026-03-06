@@ -10,7 +10,7 @@
     "arches": ["arm64-v8a"]
   },
   {
-    "app_name": "phone",
+    "app_name": "dialer",
     "source": "taknok",
     "arches": ["arm64-v8a"]
   },
@@ -73,5 +73,9 @@
     "app_name": "duolingo",
     "source": "hoo",
     "arches": ["arm64-v8a"]
-  }
+  },
+  { "app_name": "webster",
+    "source": "hoo",
+    "arches": ["arm64-v8a"]
+  },
 ]
