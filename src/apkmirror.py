@@ -121,11 +121,19 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
                     # VALIDATION: Check if this page is for our EXACT version
                     # Check multiple possible version formats
                     version_checks = [
-                        version,  # 26.1.2.0
-                        version.replace('.', '-'),  # 26-1-2-0
-                        current_ver_str,  # 26-1-2 (if stripped)
-                        ".".join(version_parts[:i])  # 26.1.2 (if stripped)
+                        version,  # 6.6
+                        version.replace('.', '-'),  # 6-6
+                        current_ver_str,  # 6-6-build-002 (if stripped)
+                        ".".join(version_parts[:i])  # 6.6 (if stripped)
                     ]
+                    
+                    # Add build suffix format if we have a build number
+                    if build_number:
+                        if build_format == 'build_suffix':
+                            version_checks.append(f"{version} build {build_number}")  # 6.6 build 002
+                            version_checks.append(f"{version.replace('.', '-')}-build-{build_number}")  # 6-6-build-002
+                        else:
+                            version_checks.append(f"{version}({build_number})")  # 32.30.0(1575420)
                     
                     # Also check page title and headings for version
                     title_tag = soup.find('title')
