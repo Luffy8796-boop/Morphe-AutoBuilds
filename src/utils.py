@@ -178,7 +178,7 @@ def get_supported_version(package_name: str, cli: str, patches: str) -> Optional
         'list-versions',
         '-f', package_name,
         patches
-    ], capture=True, silent=True)
+    ], capture=True, silent=True, check=False)
 
     if not output:
         logging.warning("No output returned from list-versions command")
