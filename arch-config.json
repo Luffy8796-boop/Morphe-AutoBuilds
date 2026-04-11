@@ -1,37 +1,47 @@
 [
-  {
-    "app_name": "youtube-music",
-    "source": "morphe",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "google-photos",
-    "source": "rookie",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "cake",
-    "source": "custom-patches",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-    {
-    "app_name": "instagram",
-    "source": "piko-dev",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "phone",
-    "source": "taknok",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "pokecardex",
-    "source": "almewty",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "messenger",
-    "source": "revanced",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  }
+  { "app_name": "youtube", "source": "morphe", "arches": ["arm64-v8a"] },
+  { "app_name": "youtube-music", "source": "morphe", "arches": ["arm64-v8a"] },
+  { "app_name": "reddit", "source": "morphe", "arches": ["arm64-v8a"] },
+  { "app_name": "x", "source": "piko", "arches": ["arm64-v8a"] },
+  { "app_name": "instagram", "source": "piko-dev", "arches": ["arm64-v8a"] },
+  { "app_name": "printrest", "source": "adobo", "arches": ["arm64-v8a"] },
+  { "app_name": "soundcloud", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "google-photos", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "disney-plus", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "facebook", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "duolingo", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "google-news", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "messenger", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "prime-video", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "proton-mail", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "proton-vpn", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "aiocal", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "nomone", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "wallcraft", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "bussu", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "number", "source": "Hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "pandora", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "mimo", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "rar", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "threads", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "crunchyroll", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "tasker", "source": "dropped", "arches": ["arm64-v8a"] },
+  { "app_name": "sofascore", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "calistree", "source": "brosssh", "arches": ["arm64-v8a"] },
+  { "app_name": "webster", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "telegram", "source": "aunali321", "arches": ["arm64-v8a"] },
+  { "app_name": "hevy", "source": "brosssh", "arches": ["arm64-v8a"] },
+  { "app_name": "flatastic", "source": "tosox", "arches": ["arm64-v8a"] },
+  { "app_name": "ticktick", "source": "tosox", "arches": ["arm64-v8a"] },
+  { "app_name": "splitwise", "source": "burgers", "arches": ["arm64-v8a"] },
+  { "app_name": "trakt", "source": "tosox", "arches": ["arm64-v8a"] },
+  { "app_name": "letterboxd", "source": "rookie", "arches": ["arm64-v8a"] },
+  { "app_name": "fxfile", "source": "dropped", "arches": ["arm64-v8a"] },
+  { "app_name": "myfitnesspal", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "smart_launcher", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "solid", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "wps-office", "source": "hoo", "arches": ["arm64-v8a"] },
+  { "app_name": "pokecardex", "source": "almewty", "arches": ["arm64-v8a"] },
+  { "app_name": "gamehub", "source": "liaralabs", "arches": ["arm64-v8a"] },
+  { "app_name": "dialer", "source": "taknok", "arches": ["arm64-v8a"] }
 ]
