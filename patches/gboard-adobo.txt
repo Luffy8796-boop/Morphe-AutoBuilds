@@ -1,0 +1,23 @@
+# === Gboard + Adobo Patches ===
+# Always include essential privacy patches
++ Always-incognito mode
++ Enable OCR feature
++ Enable Undo feature
++ Enable clipboard in incognito
+
+# Optional: Enable these if desired
+# + Enable key shape selection
+# + Enable voice typing in incognito
+# + Toggle feature flags
+
+# Exclude patches not relevant to Gboard
+- Remove ads and telemetry
+- Hide awards
+- Hide post view counts
+- Open external links directly
+- Sanitize share links
+
+# Universal patches (apply to all apps if compatible)
++ Disable mobile ads
++ Deactivate Firebase Analytics
++ Disable metrics collection in WebView
