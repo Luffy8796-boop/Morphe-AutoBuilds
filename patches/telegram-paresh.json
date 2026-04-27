@@ -1,0 +1,24 @@
+# === Telegram + Paresh Patches ===
+# Format: +patch-name = include, -patch-name = exclude, # = comment
+
+# 🔐 CORE PATCHES (Always enabled for functionality)
++ premium-features
++ bypass-integrity-check
++ open-restricted-channels
++ copy-save-forward-restricted
++ remove-sponsored-messages
++ anti-delete-messages
++ anti-disappearing-media
+
+# ⚙️ OPTIONAL PATCHES (Disabled by default - uncomment to enable)
+# 
+# To ENABLE an optional patch, remove the '#' at the start of its line:
+#
+# + disable-auto-update
+# + hide-typing-indicator
+# + download-speed-boost
+
+# ❌ EXPLICITLY EXCLUDE (prevent accidental inclusion)
+- disable-auto-update
+- hide-typing-indicator
+- download-speed-boost
