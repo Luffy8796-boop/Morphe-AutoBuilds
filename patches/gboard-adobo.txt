@@ -6,9 +6,9 @@
 + Enable clipboard in incognito
 
 # Optional: Enable these if desired
-# + Enable key shape selection
-# + Enable voice typing in incognito
-# + Toggle feature flags
++ Enable key shape selection
++ Enable voice typing in incognito
++ Toggle feature flags
 
 # Exclude patches not relevant to Gboard
 - Remove ads and telemetry
