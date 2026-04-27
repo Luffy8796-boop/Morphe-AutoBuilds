@@ -3,7 +3,6 @@
   "name": "truecaller-caller-id-block",
   "arch": "arm64-v8a",
   "package": "com.truecaller",
-  "version": "",
   "release_prefix": "truecaller-trusted-caller-id",
   "splitApk": true
 }
