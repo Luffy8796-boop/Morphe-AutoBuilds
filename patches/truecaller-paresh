@@ -1,0 +1,36 @@
+# === Truecaller + Paresh Patches ===
+# Format: +patch = include, -patch = exclude, # = comment
+
+# 🔐 CORE PATCHES (Always enabled for functionality)
++ unlock-gold-premium
++ remove-ads
++ prevent-server-reset-blocking
++ block-subscription-expired-notification
+
+# ⚙️ OPTIONAL PATCHES (Disabled by default - uncomment to enable)
+# 
+# To ENABLE an optional patch:
+# 1. Remove the '#' before the '+' line
+# 2. Comment out or delete the corresponding '-' exclusion line
+#
+# Hide Premium tab from bottom navigation
+# + hide-premium-tab
+# - hide-premium-tab
+
+# Hide Premium entry from Settings menu
+# + hide-premium-from-settings
+# - hide-premium-from-settings
+
+# Hide Scams tab (caller ID spam section)
+# + hide-scams-tab
+# - hide-scams-tab
+
+# Hide Assistant tab (AI features)
+# + hide-assistant-tab
+# - hide-assistant-tab
+
+# ❌ SERVER-SIDE FEATURES (Cannot be patched - explicitly excluded)
+- who-viewed-my-profile
+- gold-caller-id-badge
+- cloud-backup-premium
+- priority-support
