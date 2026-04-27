@@ -1,10 +1,10 @@
 [
     {
-        "name": "revanced-patches"
+        "name": "morphe-patches"
     },
     {
-        "user": "AmpleReVanced",
-        "repo": "revanced-cli",
+        "user": "MorpheApp",
+        "repo": "morphe-cli",
         "tag": "latest"
     },
     {
