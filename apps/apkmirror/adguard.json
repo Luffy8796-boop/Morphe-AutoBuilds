@@ -1,0 +1,9 @@
+{
+  "org": "adguard-software-limited",
+  "name": "adguard",
+  "type": "APK",
+  "arch": "universal",
+  "dpi": "nodpi",
+  "package": "com.adguard.android",
+  "release_prefix": "adguard-for-android"
+}
