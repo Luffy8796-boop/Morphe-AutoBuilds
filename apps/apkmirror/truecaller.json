@@ -1,6 +1,7 @@
 {
   "org": "true-software-scandinavia-ab",
   "name": "truecaller-caller-id-block",
+  "type": "APKM",
   "package": "com.truecaller",
   "version": "26.10.6",
   "release_prefix": "truecaller-trusted-caller-id"
