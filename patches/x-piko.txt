@@ -1,3 +1,3 @@
-+ Bring back twitter
-- Add ability to copy media link
-- Clear tracking params
++ bring-back-twitter
+- add-ability-to-copy-media-link
+- clear-tracking-params
