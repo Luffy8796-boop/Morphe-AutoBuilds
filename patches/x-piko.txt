@@ -1,12 +1,2 @@
-# === Twitter/X + Piko Patches ===
-# Format: +patch = include | -patch = exclude | # = comment
-
-# ✅ ADS & SPAM REMOVAL (Highly Recommended)
-+ Remove Ads
-+ Remove premium upsell
-+ Hide recommendation items
-+ Hide promote button
 + Bring back twitter
-- Dynamic color
-- Change app icon
 - Add ability to copy media link
