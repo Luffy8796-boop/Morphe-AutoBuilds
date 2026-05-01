@@ -29,8 +29,8 @@
 # ✅ UI IMPROVEMENTS
 + Bring back twitter
 + Disable chirp font
-+ Dynamic color
-+ Change app icon
+- Dynamic color
+- Change app icon
 + Hide Banner
 + Hide Live Threads
 + Hide Recommended Users
