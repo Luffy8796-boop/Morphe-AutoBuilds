@@ -17,7 +17,7 @@
 # ✅ FEATURES & UTILITIES
 + Download patch
 + Native downloader
-+ Add ability to copy media link
+- Add ability to copy media link
 + Share Tweet as Image
 + Enable Undo Posts
 + Native reader mode
