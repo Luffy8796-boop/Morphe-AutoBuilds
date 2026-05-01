@@ -2,6 +2,7 @@
   "org": "true-software-scandinavia-ab",
   "name": "truecaller-caller-id-block",
   "type": "APKM",
+  "arch": "arm64-v8a"
   "dpi": "",
   "package": "com.truecaller",
   "version": "26.10.6",
