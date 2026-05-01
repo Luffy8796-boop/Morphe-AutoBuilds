@@ -29,7 +29,7 @@
   { "app_name": "sofascore", "source": "hoo", "arches": ["arm64-v8a"] },
   { "app_name": "calistree", "source": "brosssh", "arches": ["arm64-v8a"] },
   { "app_name": "webster", "source": "hoo", "arches": ["arm64-v8a"] },
-  { "app_name": "telegram", "source": "aunali321", "arches": ["arm64-v8a"] },
+  { "app_name": "telegram", "source": "paresh", "arches": ["arm64-v8a"] },
   { "app_name": "hevy", "source": "brosssh", "arches": ["arm64-v8a"] },
   { "app_name": "flatastic", "source": "tosox", "arches": ["arm64-v8a"] },
   { "app_name": "ticktick", "source": "tosox", "arches": ["arm64-v8a"] },
