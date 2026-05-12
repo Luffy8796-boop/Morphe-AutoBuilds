@@ -42,6 +42,37 @@ def download_required(source: str) -> tuple[list[Path], str]:
     # Handle bundle format
     if isinstance(repos_info, dict) and "bundle_url" in repos_info:
         return download_from_bundle(repos_info)
+            # [ ... existing code to read repos_info ... ]
+        
+        # NEW: Handle GitLab-based sources (like paresh patches)
+    elif isinstance(repos_info, dict) and "gitlab_project_id" in repos_info:
+        project_id = repos_info["gitlab_project_id"]
+        name = repos_info.get("name", "gitlab-patches")
+        # Download the .mpp patch file from GitLab
+        patch_file = download_gitlab_release_asset(project_id, asset_pattern=".mpp")
+        downloaded_files = [patch_file]
+            
+        # Now we also need the Morphe CLI to apply the patches
+        # Reuse the existing Morphe CLI detection logic
+        morphe_source_path = Path("sources") / "morphe.json"
+        with morphe_source_path.open() as morphe_file:
+            morphe_info = json.load(morphe_file)
+            morphe_name = morphe_info[0]["name"]
+            # Find the CLI repo entry
+            for repo_info in morphe_info[1:]:
+                if repo_info['repo'] == "morphe-cli":
+                    user = repo_info['user']
+                    repo = repo_info['repo']
+                    tag = repo_info['tag']
+                    release = utils.detect_github_release(user, repo, tag)
+                    for asset in release["assets"]:
+                        if asset["name"].endswith(".jar") and "morphe-cli" in asset["name"]:
+                            cli_file = download_resource(asset["browser_download_url"])
+                            downloaded_files.append(cli_file)
+                            break
+                    break
+            
+        return downloaded_files, name
     
     # Handle old list format
     name = repos_info[0]["name"]
