@@ -2,5 +2,13 @@
   {
     "name": "morphe-patches",
     "gitlab_project_id": "Paresh-Maheshwari%2Fparesh-patches"
+  },
+    {
+    "user": "morphe",
+    "repo": "morphe-cli",
+    "tag": "latest"
+  },
+    {
+    "bundle": "https://gitlab.com/Paresh-Maheshwari/paresh-patches/-/releases/permalink/latest/downloads/patches-1.15.2.mpp"
   }
 ]
