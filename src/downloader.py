@@ -41,20 +41,13 @@ def download_required(source: str) -> tuple[list[Path], str]:
 
     # Handle bundle format
     if isinstance(repos_info, dict) and "bundle_url" in repos_info:
-        return download_from_bundle(repos_info)    
+        return download_from_bundle(repos_info)
     
     # Handle old list format
     name = repos_info[0]["name"]
     downloaded_files = []
 
     for repo_info in repos_info[1:]:
-
-        if "bundle" in repo_info:
-            logging.info(f"Downloading bundled patch from: {repo_info['bundle']}")
-            bundle_file = download_resource(repo_info["bundle"])
-            downloaded_files.append(bundle_file)
-            continue
-        
         user = repo_info['user']
         repo = repo_info['repo']
         tag = repo_info['tag']
@@ -179,50 +172,3 @@ def download_apkeditor() -> Path:
             return download_resource(asset["browser_download_url"])
 
     raise RuntimeError("APKEditor .jar file not found in the latest release")
-# Add these functions inside src/downloader.py
-
-def detect_gitlab_latest_release_asset(project_id: str, asset_pattern: str = ".mpp") -> str:
-    """Get the direct download URL of the latest release asset from a GitLab project.
-    
-    Args:
-        project_id: URL-encoded GitLab project ID (e.g., 'Paresh-Maheshwari%2Fparesh-patches')
-        asset_pattern: File extension to look for in release assets
-    
-    Returns:
-        Direct download URL of the matching asset
-    """
-    import requests
-    
-    api_url = f"https://gitlab.com/api/v4/projects/{project_id}/releases/permalink/latest"
-    
-    try:
-        response = requests.get(api_url)
-        response.raise_for_status()
-        release_data = response.json()
-        
-        # Look for asset links
-        assets = release_data.get('assets', {}).get('links', [])
-        for asset in assets:
-            if asset.get('name', '').endswith(asset_pattern):
-                return asset.get('direct_asset_url')
-        
-        # If no matching asset found, raise error
-        raise ValueError(f"No asset matching pattern '{asset_pattern}' found in latest release")
-        
-    except Exception as e:
-        logging.error(f"Failed to get latest GitLab release for {project_id}: {e}")
-        raise
-
-
-def download_gitlab_release_asset(project_id: str, asset_pattern: str = ".mpp") -> Path:
-    """Download a specific asset from the latest GitLab release.
-    
-    Args:
-        project_id: URL-encoded GitLab project ID
-        asset_pattern: File extension to look for
-    Returns:
-        Path object pointing to the downloaded file
-    """
-    direct_url = detect_gitlab_latest_release_asset(project_id, asset_pattern)
-    logging.info(f"Downloading GitLab release asset from: {direct_url}")
-    return download_resource(direct_url)
