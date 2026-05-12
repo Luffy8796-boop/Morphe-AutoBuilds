@@ -1,15 +1,6 @@
 [
   {
-    "name": "morphe-patches"
-  },
-  {
-    "user": "MorpheApp",
-    "repo": "morphe-cli",
-    "tag": "latest"
-  },
-  {
-    "user": "paresh-maheshwari",
-    "repo": "paresh-patches",
-    "tag": "latest"
+    "name": "morphe-patches",
+    "gitlab_project_id": "Paresh-Maheshwari%2Fparesh-patches"
   }
 ]
