@@ -7,7 +7,9 @@
     "repo": "morphe-cli",
     "tag": "latest"
   },
-  { 
+  { "user": "Paresh-Maheshwari",
+    "repo": "paresh-patches",
+    "tag": "latest"
     "bundle": "https://gitlab.com/Paresh-Maheshwari/paresh-patches/-/releases/permalink/latest/downloads/patches-1.15.2.mpp"
   }
 ]
