@@ -7,8 +7,9 @@
     "repo": "morphe-cli",
     "tag": "latest"
   },
-  { "user": "Luffy8796-boop",
+  { 
+    "user": "Luffy8796-boop",
     "repo": "ownpatches",
-    "tag": "idk"
+    "tag": "latest"
   }
 ]
