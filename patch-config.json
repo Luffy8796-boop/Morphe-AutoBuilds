@@ -57,6 +57,7 @@
     { "app_name": "gamehub", "source": "liaralabs" },
     { "app_name": "dialer", "source": "taknok" },
     { "app_name": "gboard", "source": "adobo" },
-    { "app_name": "truecaller", "source": "paresh" }
+    { "app_name": "truecaller", "source": "paresh" },
+    { "app_name": "xodo", "source": "hoo"}
   ]
 }
