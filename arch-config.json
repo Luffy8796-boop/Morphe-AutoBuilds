@@ -44,5 +44,6 @@
   { "app_name": "pokecardex", "source": "almewty", "arches": ["arm64-v8a"] },
   { "app_name": "gamehub", "source": "liaralabs", "arches": ["arm64-v8a"] },
   { "app_name": "dialer", "source": "taknok", "arches": ["arm64-v8a"] },
-  { "app_name": "truecaller", "source": "paresh", "arches": ["arm64-v8a"] }
+  { "app_name": "truecaller", "source": "paresh", "arches": ["arm64-v8a"]},
+  { "app_name": "xodo", "source": "hoo", "arches": ["arm64-v8a"]}
 ]
