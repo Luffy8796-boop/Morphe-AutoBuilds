@@ -265,6 +265,26 @@ def extract_filename(response, fallback_url=None) -> str:
     path = urlparse(fallback_url or response.url).path
     return unquote(Path(path).name)
 
+def gh_api_request(endpoint: str) -> dict:
+    """Make a GitHub API request using the 'gh' CLI as it handles tokens more robustly in Actions"""
+    env = os.environ.copy()
+    # Ensure GH_TOKEN is set for the gh cli
+    if "GITHUB_TOKEN" in env and "GH_TOKEN" not in env:
+        env["GH_TOKEN"] = env["GITHUB_TOKEN"]
+        
+    try:
+        result = subprocess.run(
+            ["gh", "api", endpoint],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=True
+        )
+        return json.loads(result.stdout)
+    except Exception as e:
+        logging.debug(f"gh api {endpoint} failed: {e}")
+        raise
+
 def detect_github_release(user: str, repo: str, tag: str) -> dict:
     if tag == "latest":
         release_lookup = "latest"
@@ -273,50 +293,77 @@ def detect_github_release(user: str, repo: str, tag: str) -> dict:
     else:
         release_lookup = tag
 
-    try:
-        repo_obj = gh.get_repo(f"{user}/{repo}")
+    # Small sleep to avoid hammering the API and mitigate transient 401s
+    time.sleep(1)
 
-        if tag == "latest":
-            release = repo_obj.get_latest_release()
-            logging.info(f"Fetched latest release: {release.tag_name}")
-            return release.raw_data
-
-        if tag in ["", "dev", "prerelease"]:
-            releases = list(repo_obj.get_releases())
-            if not releases:
-                raise ValueError(f"No releases found for {user}/{repo}")
-
-            if tag == "":
-                release = max(releases, key=lambda x: x.created_at)
-            elif tag == "dev":
-                devs = [r for r in releases if 'dev' in r.tag_name.lower()]
-                if not devs:
-                    raise ValueError(f"No dev release found for {user}/{repo}")
-                release = max(devs, key=lambda x: x.created_at)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Prefer 'gh' CLI as it handles tokens more robustly in Actions environment
+            if attempt < 2:
+                logging.info(f"Fetching release {tag} for {user}/{repo} (attempt {attempt + 1})...")
+                
+                if tag == "latest":
+                    data = gh_api_request(f"repos/{user}/{repo}/releases/latest")
+                    return data
+                elif tag in ["", "dev", "prerelease"]:
+                    data = gh_api_request(f"repos/{user}/{repo}/releases")
+                    if not isinstance(data, list):
+                        # Handle case where API might return a single object (unlikely for /releases)
+                        data = [data]
+                        
+                    if not data:
+                        raise ValueError(f"No releases found for {user}/{repo}")
+                    
+                    if tag == "":
+                        release = max(data, key=lambda x: x['created_at'])
+                    elif tag == "dev":
+                        devs = [r for r in data if 'dev' in r['tag_name'].lower()]
+                        if not devs:
+                            raise ValueError(f"No dev release found for {user}/{repo}")
+                        release = max(devs, key=lambda x: x['created_at'])
+                    else:
+                        pres = [r for r in data if r['prerelease']]
+                        if not pres:
+                            raise ValueError(f"No prerelease found for {user}/{repo}")
+                        release = max(pres, key=lambda x: x['created_at'])
+                    return release
+                else:
+                    data = gh_api_request(f"repos/{user}/{repo}/releases/tags/{tag}")
+                    return data
             else:
-                pres = [r for r in releases if r.prerelease]
-                if not pres:
-                    raise ValueError(f"No prerelease found for {user}/{repo}")
-                release = max(pres, key=lambda x: x.created_at)
-
-            logging.info(f"Fetched release: {release.tag_name}")
-            return release.raw_data
-
-        release = repo_obj.get_release(tag)
-        logging.info(f"Fetched release: {release.tag_name}")
-        return release.raw_data
-    except BadCredentialsException as exc:
-        logging.error(
-            "Bad GitHub credentials while fetching release metadata for %s/%s (%s). "
-            "Check GITHUB_TOKEN/GH_TOKEN permissions and validity.",
-            user,
-            repo,
-            release_lookup,
-        )
-        raise RuntimeError("Bad GitHub credentials for release lookup") from exc
-    except Exception as e:
-        logging.error(f"Error fetching release {tag} for {user}/{repo}: {e}")
-        raise
+                # Last ditch effort with PyGithub if gh CLI fails
+                logging.warning(f"Falling back to PyGithub for {user}/{repo}...")
+                repo_obj = gh.get_repo(f"{user}/{repo}")
+                if tag == "latest":
+                    release = repo_obj.get_latest_release()
+                    return release.raw_data
+                # ... other cases omitted for brevity as gh CLI is preferred ...
+                return repo_obj.get_release(tag).raw_data
+                    
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 3
+                logging.warning(f"Attempt {attempt + 1} failed for {user}/{repo}: {e}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+                continue
+            
+            # Special message for 401 on external repos
+            err_msg = str(e).lower()
+            if "401" in err_msg or "unauthorized" in err_msg or "bad credentials" in err_msg:
+                is_external = user.lower() not in (os.environ.get("GITHUB_REPOSITORY", "").lower())
+                if is_external:
+                    logging.error(
+                        "❌ 401 Unauthorized for external repository %s/%s. "
+                        "The default GITHUB_TOKEN in Actions cannot access private external repositories. "
+                        "If this repo is private, please use a Personal Access Token (PAT) with 'repo' scope "
+                        "stored as a secret (e.g., CUSTOM_GH_TOKEN) and update your workflow.",
+                        user, repo
+                    )
+                raise RuntimeError("Bad GitHub credentials for release lookup") from e
+            
+            logging.error(f"Error fetching release {tag} for {user}/{repo} after {max_retries} attempts: {e}")
+            raise
 
 def detect_source_type(cli_file: Path, patches_file: Path) -> str:
     """Detect if we're using Morphe or ReVanced based on downloaded files"""
