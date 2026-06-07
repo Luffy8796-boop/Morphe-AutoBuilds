@@ -1,0 +1,63 @@
+# === YouTube Music + Anddea (ReVanced Extended) Patches ===
+# Format: +patch = include | -patch = exclude | # = comment
+
+# ✅ CORE PATCHES (Highly Recommended)
++ Settings for YouTube Music       # Mandatory for settings UI
++ Hide ads                         # Removes ads
++ Remove background playback restrictions # Allows background play
++ Sanitize sharing links           # Cleans URLs
++ Return YouTube Dislike           # Shows dislike counts
++ SponsorBlock                     # Skips intros/outros/sponsorships
++ GmsCore support                  # Required for non-root Morphe builds
+
+# ✅ AUDIO & VIDEO QUALITY
++ Bitrate default value            # Sets audio quality to 'Always High'
++ Video playback                   # Customizes video quality/speed defaults
++ Disable forced auto captions     # Stops auto-enabling captions
++ Disable forced auto audio tracks # Stops auto-enabling alternate audio tracks
+
+# ✅ UI & EXPERIENCE
++ Dark theme                       # Applies dark theme
++ Change start page                # Lets user choose home/library/etc
++ Restore old style library shelf  # Restores classic library view
++ Hide layout components           # Hides various UI clutter
++ Hide action bar components       # Hides download buttons etc if needed
++ Navigation bar components        # Customizes nav bar
++ Player components                # Customizes player controls
++ Flyout menu components           # Customizes flyout menus
+
+# ✅ PRIVACY & UTILITIES
++ Watch history                    # Controls watch history domain/status
++ Disable QUIC protocol            # Can help with connectivity issues
++ Bypass image region restrictions # Fixes broken images in some regions
+
+# ⚙️ OPTIONAL / ADVANCED (Disabled by default)
+# Uncomment to enable:
+
+# Branding & Icons
+# + Custom branding icon for YouTube Music
+# + Custom branding name for YouTube Music
+# + Custom header for YouTube Music
+
+# Playback Tweaks
+# + Enable landscape mode          # Allows full screen rotation
+# + Disable Cairo splash animation # Removes startup animation
+# + Disable dislike redirection    # Prevents skip on dislike click
+# + Disable music video in album   # Redirects MVs in albums
+
+# Debugging & Experimental
+# + Enable debug logging
+# + Spoof app version for lyrics   # For older lyrics UI
+# + Certificate spoof              # For Android Auto support
+
+# ❌ EXPLICIT EXCLUSIONS (Prevents accidental inclusion)
+- Custom branding icon for YouTube Music
+- Custom branding name for YouTube Music
+- Custom header for YouTube Music
+- Enable landscape mode
+- Disable Cairo splash animation
+- Disable dislike redirection
+- Disable music video in album
+- Enable debug logging
+- Spoof app version for lyrics
+- Certificate spoof
