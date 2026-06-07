@@ -1,1 +1,2 @@
 -AddResourcesPatch
+-Disable music video in album
