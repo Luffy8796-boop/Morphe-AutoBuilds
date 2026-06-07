@@ -1,6 +1,6 @@
 [
   { "app_name": "youtube", "source": "morphe", "arches": ["arm64-v8a"] },
-  { "app_name": "youtube-music", "source": "morphe", "arches": ["arm64-v8a"] },
+  { "app_name": "youtube-music", "source": "anddea", "arches": ["arm64-v8a"] },
   { "app_name": "reddit", "source": "morphe", "arches": ["arm64-v8a"] },
   { "app_name": "x", "source": "piko", "arches": ["arm64-v8a"] },
   { "app_name": "instagram", "source": "piko-dev", "arches": ["arm64-v8a"] },
