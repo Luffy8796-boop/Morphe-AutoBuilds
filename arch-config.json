@@ -1,37 +1,43 @@
-[
-  {
-    "app_name": "youtube-music",
-    "source": "morphe",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "google-photos",
-    "source": "rookie",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "cake",
-    "source": "custom-patches",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-    {
-    "app_name": "instagram",
-    "source": "piko",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "phone",
-    "source": "taknok",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "pokecardex",
-    "source": "almewty",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  },
-  {
-    "app_name": "messenger",
-    "source": "revanced",
-    "arches": ["arm64-v8a", "armeabi-v7a"]
-  }
-]
+{
+  "patch_list": [
+    { "app_name": "youtube", "source": "morphe", "arches": ["arm64-v8a"] },
+    { "app_name": "youtube-music", "source": "morphe", "arches": ["arm64-v8a"] },
+    { "app_name": "reddit", "source": "morphe", "arches": ["arm64-v8a"] },
+    { "app_name": "instagram", "source": "piko", "arches": ["arm64-v8a"] },
+    { "app_name": "printrest", "source": "adobo", "arches": ["arm64-v8a"] },
+    { "app_name": "camscanner", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "niagara", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "pydroid", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "ventusky", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "xodo", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "google-photos", "source": "rookie", "arches": ["arm64-v8a"] },
+    { "app_name": "duolingo", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "proton-mail", "source": "rookie", "arches": ["arm64-v8a"] },
+    { "app_name": "wallcraft", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "mimo", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "rar", "source": "rookie", "arches": ["arm64-v8a"] },
+    { "app_name": "threads", "source": "rookie", "arches": ["arm64-v8a"] },
+    { "app_name": "tasker", "source": "dropped", "arches": ["arm64-v8a"] },
+    { "app_name": "sofascore", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "webster", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "mapy", "source": "brosssh", "arches": ["arm64-v8a"] },
+    { "app_name": "telegram", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "earphone", "source": "tosox", "arches": ["arm64-v8a"] },
+    { "app_name": "crex", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "documentscanner", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "fing", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "lumina", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "mark", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "starsense", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "prompter", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "macrodroid", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "alarmo", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "vn", "source": "paresh", "arches": ["arm64-v8a"] },
+    { "app_name": "trakt", "source": "tosox", "arches": ["arm64-v8a"] },
+    { "app_name": "letterboxd", "source": "rookie", "arches": ["arm64-v8a"] },
+    { "app_name": "fxfile", "source": "dropped", "arches": ["arm64-v8a"] },
+    { "app_name": "smart_launcher", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "solid", "source": "hoo", "arches": ["arm64-v8a"] },
+    { "app_name": "pokecardex", "source": "almewty", "arches": ["arm64-v8a"] }
+  ]
+}
