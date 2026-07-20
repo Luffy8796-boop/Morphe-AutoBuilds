@@ -1,7 +1,6 @@
 {
     "org": "cloudflare",
     "name": "1-1-1-1-faster-safer-internet",
-    "release_prefix": "1-1-1-1-faster-safer-internet/",
     "type": "BUNDLE", 
     "arch": "arm64-v8a",
     "dpi": "160-640dpi",
