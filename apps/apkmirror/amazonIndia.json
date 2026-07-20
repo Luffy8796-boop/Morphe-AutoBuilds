@@ -3,7 +3,7 @@
     "name": "amazon-india-shop-pay",
     "type": "BUNDLE", 
     "arch": "arm64-v8a",
-    "dpi": "120-640dpi",
+    "dpi": "",
     "package" : "in.amazon.mShop.android.shopping",
     "version" : ""
 }
