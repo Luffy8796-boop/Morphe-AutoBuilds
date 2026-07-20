@@ -95,7 +95,8 @@
     { "app_name": "pokecardex", "source": "almewty" },
     { "app_name": "gamehub", "source": "liaralabs" },
     { "app_name": "dialer", "source": "taknok" },
-    { "app_name": "windscribe", "source": "rushiranpise-dev" }
+    { "app_name": "windscribe", "source": "rushiranpise-dev" },
+    { "app_name": "amazon-india-shop-pay-minitv", "source": "rushiranpise" }
     
   ]
 }
