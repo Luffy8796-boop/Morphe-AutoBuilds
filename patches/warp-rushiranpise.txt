@@ -1,1 +1,2 @@
++ FirebaseAnalyticsLogEventFingerprint
 + Disable Analytics / Telemetry
