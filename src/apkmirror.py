@@ -222,6 +222,55 @@ def find_release_page_from_main(version: str, config: dict, build_number: str = 
         logging.debug(f"Error scraping main page for release URL: {e}")
         return None
 
+def _find_download_button(soup) -> object | None:
+    """Find the APKMirror download button across current page layouts.
+
+    APKMirror has changed the button markup over time: some pages use a single
+    class name like 'downloadButton', while newer pages use multiple classes
+    such as 'accent_bg btn btn-flat downloadButton ohH'. This helper accepts
+    both forms and also falls back to the standard 'download-link' id.
+    """
+    for tag in soup.find_all('a', href=True):
+        classes = tag.get('class', [])
+        if isinstance(classes, str):
+            class_names = [classes]
+        else:
+            class_names = [c for c in classes if isinstance(c, str)]
+
+        normalized = [c.lower() for c in class_names]
+        if any('downloadbutton' in c or 'download-link' in c for c in normalized):
+            return tag
+
+        if tag.get('id') == 'download-link':
+            return tag
+
+    return None
+
+
+def _find_direct_download_page(soup, version: str) -> str | None:
+    """Find a direct APK download page link when APKMirror omits the variant table.
+
+    Some newer APKMirror release pages expose a direct link such as
+    '/.../warp-safer-internet-6-38-8-android-apk-download/' instead of a
+    variant row table. This helper locates that link and returns it as a full URL.
+    """
+    version_tokens = [version, version.replace('.', '-'), version.split('.')[0]]
+    for link in soup.find_all('a', href=True):
+        href = link.get('href', '')
+        if not href.startswith('/apk/'):
+            continue
+        if 'android-apk-download' not in href:
+            continue
+
+        text = ' '.join(link.get_text(' ', strip=True).split()).lower()
+        if any(token.lower() in href.lower() for token in version_tokens):
+            return base_url + href
+        if 'download' in text or 'apk' in text:
+            return base_url + href
+
+    return None
+
+
 def get_download_link(version: str, app_name: str, config: dict, arch: str = None) -> str:
     if not version:
         logging.error(f"No version provided for {app_name}")
@@ -470,12 +519,17 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
                         break
     
     if not download_page_url:
-        logging.error(f"No variant found for {app_name} {version} with criteria {criteria}")
-        # Debug: log what rows we found
-        logging.debug(f"Found {len(rows)} rows total")
-        for idx, row in enumerate(rows[:5]):  # First 5 rows
-            logging.debug(f"Row {idx}: {row.get_text()[:100]}...")
-        return None
+        direct_download_page = _find_direct_download_page(found_soup, version)
+        if direct_download_page:
+            download_page_url = direct_download_page
+            logging.info(f"Using direct APK download page for {app_name} {version}: {download_page_url}")
+        else:
+            logging.error(f"No variant found for {app_name} {version} with criteria {criteria}")
+            # Debug: log what rows we found
+            logging.debug(f"Found {len(rows)} rows total")
+            for idx, row in enumerate(rows[:5]):  # First 5 rows
+                logging.debug(f"Row {idx}: {row.get_text()[:100]}...")
+            return None
     
     # --- STANDARD DOWNLOAD FLOW ---
     try:
@@ -494,9 +548,12 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
             logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> Download Page")
             soup = BeautifulSoup(response.content, "html.parser")
 
-            button = soup.find('a', id='download-link')
+            button = _find_download_button(soup)
             if button:
-                return base_url + button['href']
+                href = button.get('href', '')
+                if href.startswith('http'):
+                    return href
+                return base_url + href
     except Exception as e:
         logging.error(f"Error in download flow: {e}")
 
