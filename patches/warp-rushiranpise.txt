@@ -1,3 +1,2 @@
 # Warp patch rules
-# Disable telemetry and analytics-related behavior by default.
 + Disable Analytics / Telemetry
