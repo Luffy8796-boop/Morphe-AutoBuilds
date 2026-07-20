@@ -1,2 +1,2 @@
+# Warp patch rules
 + FirebaseAnalyticsLogEventFingerprint
-+ Disable Analytics / Telemetry
