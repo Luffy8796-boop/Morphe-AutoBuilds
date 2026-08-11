@@ -2,9 +2,9 @@
     "org": "tiktok-pte-ltd",
     "name": "tik-tok-including-musical-ly",
     "release_prefix": "tiktok",
-    "type": "APK", 
+    "type": "BUNDLE", 
     "arch": "arm64-v8a + armeabi-v7a",
-    "dpi": "nodpi",
+    "dpi": "120-640dpi",
     "package" : "com.zhiliaoapp.musically",
     "version" : ""
 }
