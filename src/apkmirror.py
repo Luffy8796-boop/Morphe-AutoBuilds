@@ -251,7 +251,7 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
         logging.error(f"No version provided for {app_name}")
         return None
         
-    target_arch = arch if arch else config.get('arch', 'universal')
+    target_arch = arch if (arch and arch != "universal") else config.get('arch', 'universal')
     
     criteria = [config['type'], target_arch, config['dpi']]
     

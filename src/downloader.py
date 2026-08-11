@@ -141,9 +141,11 @@ def download_platform(
         with config_path.open() as json_file:
             config = json.load(json_file)
         
-        # Override arch if specified
-        if arch:
+        # Override arch only if explicitly specified non-universal, or if config has no arch set
+        if arch and arch != "universal":
             config['arch'] = arch
+        elif 'arch' not in config or not config['arch']:
+            config['arch'] = arch or "universal"
 
         platform_module = globals()[platform]
 
