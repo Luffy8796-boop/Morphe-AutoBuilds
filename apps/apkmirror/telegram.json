@@ -2,9 +2,9 @@
     "org": "telegram-fz-llc",
     "name": "telegram",
     "release_prefix": "telegram",
-    "type": "BUNDLE", 
-    "arch": "arm64-v8a",
+    "type": "APK",
+    "arch": "universal",
     "dpi": "nodpi",
-    "package": "org.telegram.messenger.web",
+    "package": "org.telegram.messenger"
     "version": ""
 }
