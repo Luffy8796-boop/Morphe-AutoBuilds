@@ -1,0 +1,10 @@
+{
+    "org": "amazon-mobile-llc",
+    "name": "amazon-india-shop-pay",
+    "release_prefix": "amazon-india-shop-pay-minitv",
+    "type": "BUNDLE",
+    "arch": "arm64-v8a + armeabi-v7a",
+    "dpi": "120-640dpi",
+    "package": "in.amazon.mShop.android.shopping"
+    "version": ""
+}
