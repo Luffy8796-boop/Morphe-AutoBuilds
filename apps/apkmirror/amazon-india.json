@@ -5,6 +5,6 @@
     "type": "BUNDLE",
     "arch": "",
     "dpi": "120-640dpi",
-    "package": "in.amazon.mShop.android.shopping"
+    "package": "in.amazon.mShop.android.shopping",
     "version": ""
 }
