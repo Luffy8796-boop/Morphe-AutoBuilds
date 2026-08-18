@@ -1,10 +1,10 @@
 {
     "org": "telegram-fz-llc",
-    "name": "telegram",
-    "release_prefix": "telegram",
+    "name": "telegram-web-version",
+    "release_prefix": "telegram-web-version",
     "type": "APK",
     "arch": "universal",
     "dpi": "nodpi",
-    "package": "org.telegram.messenger"
+    "package": "org.telegram.messenger.web"
     "version": ""
 }
