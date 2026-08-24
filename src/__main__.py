@@ -262,7 +262,8 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
                         "java", "-jar", str(cli),
                         "--patches", str(patches),
                         "--input", str(input_apk),
-                        "--output", str(output_apk)
+                        "--output", str(output_apk),
+                        *exclude_patches, *include_patches
                     ]
                     try:
                         utils.run_process(morphe_cmd, capture=True, stream=True)
