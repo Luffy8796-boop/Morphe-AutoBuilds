@@ -1,1 +1,2 @@
 + Clone App
+- Block Brave Telemetry
