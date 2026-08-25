@@ -1,0 +1,9 @@
+{
+    "org": "adobe",
+    "name": "adobe-acrobat",
+    "type": "BUNDLE",
+    "arch": "arm64-v8a",
+    "dpi": "",
+    "package": "com.adobe.reader",
+    "version": ""
+}
