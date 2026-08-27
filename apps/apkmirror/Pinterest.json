@@ -3,8 +3,8 @@
     "name": "pinterest-one-destination-for-a-world-of-inspiration",
     "release_prefix": "pinterest-14-32-0",
     "type": "APK",
-    "arch": "universal",
+    "arch": "UNIVERSAL",
     "dpi": "nodpi",
     "package": "com.pinterest",
-    "version": "14.32.0"
+    "version": ""
 }
