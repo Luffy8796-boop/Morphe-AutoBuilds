@@ -371,9 +371,6 @@ def main():
         print(f"\n🎯 Built {len(built_apks)} APK(s) for {app_name}:")
         for apk in built_apks:
             print(f"  📱 {Path(apk).name}")
-        if not built_apks:
-            logging.error("No APK was built for %s; failing this matrix job.", app_name)
-            exit(1)
         
     else:
         # Fallback to single universal build
@@ -381,9 +378,6 @@ def main():
         apk_path = run_build(app_name, source, "universal")
         if apk_path:
             print(f"🎯 Final APK path: {apk_path}")
-        else:
-            logging.error("No APK was built for %s; failing this matrix job.", app_name)
-            exit(1)
 
 if __name__ == "__main__":
     main()

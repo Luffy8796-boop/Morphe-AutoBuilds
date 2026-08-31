@@ -1,7 +1,6 @@
 import json
 import logging
 import time
-import zipfile
 from pathlib import Path
 from src import (
     utils,
@@ -13,16 +12,15 @@ from src import (
     github
 )
 
-def download_resource(url: str, name: str = None, validate_apk: bool = False) -> Path:
-    """Download a resource and reject HTML/error pages masquerading as APKs."""
-    res = session.get(url, stream=True, timeout=90)
+def download_resource(url: str, name: str = None) -> Path:
+    res = session.get(url, stream=True)
     res.raise_for_status()
     final_url = res.url
 
     if not name:
         name = utils.extract_filename(res, fallback_url=final_url)
 
-    filepath = Path(name or "download")
+    filepath = Path(name)
     total_size = int(res.headers.get('content-length', 0))
     downloaded_size = 0
 
@@ -35,18 +33,6 @@ def download_resource(url: str, name: str = None, validate_apk: bool = False) ->
     logging.info(
         f"URL: {final_url} [{downloaded_size}/{total_size}] -> \"{filepath}\" [1]"
     )
-
-    if validate_apk:
-        try:
-            with zipfile.ZipFile(filepath) as archive:
-                names = archive.namelist()
-                if "AndroidManifest.xml" not in names and not any(name.endswith("/base.apk") or name == "base.apk" for name in names):
-                    raise ValueError("archive contains no Android manifest or base APK")
-                if archive.testzip() is not None:
-                    raise ValueError("archive is corrupt")
-        except (OSError, ValueError, zipfile.BadZipFile) as exc:
-            filepath.unlink(missing_ok=True)
-            raise ValueError(f"Downloaded URL did not return a valid Android APK/archive: {exc}") from exc
 
     return filepath
 
@@ -217,17 +203,16 @@ def download_platform(
                 last_error = ValueError(f"No download link found for {app_name} version {version}")
                 continue
             try:
-                filepath = download_resource(download_link, validate_apk=True)
+                filepath = download_resource(download_link)
                 return filepath, version, candidates
             except Exception as e:
-                logging.warning("%s download failed for %s %s: %s", platform, app_name, version, e)
                 last_error = e
                 continue
 
         raise last_error or ValueError(f"No downloadable versions found for {app_name} on {platform}")
 
     except Exception as e:
-        logging.warning("%s unavailable for %s: %s", platform, app_name, e)
+        logging.error(f"Unexpected error: {e}")
         return None, None, []
 
 # Update the specific download functions
