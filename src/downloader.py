@@ -187,9 +187,12 @@ def download_platform(
             candidates = [pinned]
         else:
             candidates = utils.get_supported_versions(config["package"], cli, patches)
-            if not candidates:
+            try:
                 latest = platform_module.get_latest_version(app_name, config)
-                candidates = [latest] if latest else []
+                if latest and latest not in candidates:
+                    candidates.append(latest)
+            except Exception as e:
+                logging.debug(f"Could not get latest version for {app_name} on {platform}: {e}")
 
         last_error: Exception | None = None
         for version in candidates:

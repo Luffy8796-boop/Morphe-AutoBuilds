@@ -1,6 +1,6 @@
 {
   "org": "trakt",
-  "name": "trakt-tv",
+  "name": "trakt",
   "type": "BUNDLE",
   "arch": "universal",
   "dpi": "120-640dpi",
