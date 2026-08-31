@@ -243,34 +243,13 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
             # USE DIFFERENT COMMANDS BASED ON SOURCE TYPE
             if is_morphe:
                 logging.info("🔧 Using Morphe patching system...")
-                patch_error: subprocess.CalledProcessError | None = None
-                try:
-                    morphe_cmd = [
-                        "java", "-jar", str(cli),
-                        "patch", "--patches", str(patches),
-                        "--out", str(output_apk), str(input_apk),
-                        *exclude_patches, *include_patches
-                    ]
-                    utils.run_process(morphe_cmd, capture=True, stream=True)
-                except subprocess.CalledProcessError as e:
-                    # Remember the original failure so the retry logic below can
-                    # decide whether to fall back to an older version. We still
-                    # try the alternative argument format as a best-effort.
-                    patch_error = e
-                    logging.info("Trying alternative Morphe command format...")
-                    morphe_cmd = [
-                        "java", "-jar", str(cli),
-                        "--patches", str(patches),
-                        "--input", str(input_apk),
-                        "--output", str(output_apk)
-                    ]
-                    try:
-                        utils.run_process(morphe_cmd, capture=True, stream=True)
-                    except subprocess.CalledProcessError as e2:
-                        raise e2 from e
-                if patch_error is not None:
-                    # Fallback path succeeded; clear the error so we don't retry.
-                    patch_error = None
+                morphe_cmd = [
+                    "java", "-jar", str(cli),
+                    "patch", "--patches", str(patches),
+                    "--out", str(output_apk), str(input_apk),
+                    *exclude_patches, *include_patches
+                ]
+                utils.run_process(morphe_cmd, capture=True, stream=True)
             else:
                 logging.info("🔧 Using ReVanced patching system...")
                 cli_name = Path(cli).name.lower()

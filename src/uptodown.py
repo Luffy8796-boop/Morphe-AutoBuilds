@@ -1,3 +1,4 @@
+import re
 import logging
 from src import session, utils
 from bs4 import BeautifulSoup
@@ -64,7 +65,21 @@ def get_download_link(version: str, app_name: str, config: dict) -> str:
                     break
                     
                 for entry in version_data:
-                    if entry["version"] == version:
+                    entry_ver = entry.get("version", "").strip()
+                    clean_target = re.sub(r'[\(\[].*?[\)\]]', '', version).strip()
+                    clean_entry = re.sub(r'[\(\[].*?[\)\]]', '', entry_ver).strip()
+                    target_norm = utils.normalize_version(version)
+                    entry_norm = utils.normalize_version(entry_ver)
+
+                    is_match = (
+                        entry_ver == version
+                        or clean_entry == clean_target
+                        or clean_entry == version
+                        or entry_ver == clean_target
+                        or (entry_norm and target_norm and entry_norm == target_norm)
+                    )
+
+                    if is_match:
                         version_url_parts = entry["versionURL"]
                         version_url = f"{version_url_parts['url']}/{version_url_parts['extraURL']}/{version_url_parts['versionID']}"
                         version_page = session.get(version_url)
@@ -88,11 +103,13 @@ def get_download_link(version: str, app_name: str, config: dict) -> str:
                             return f"https://dw.uptodown.com/dwn/{download_url}"
                 
                 # Stop paginating once we've scrolled past the target version.
-                # Use numeric comparison (not lexicographic) so version boundaries
-                # like 9.x -> 10.x are handled correctly.
                 target_norm = utils.normalize_version(version)
-                if all(utils.normalize_version(entry["version"]) < target_norm
-                       for entry in version_data):
+                if target_norm and all(
+                    utils.normalize_version(entry.get("version", "")) and utils.normalize_version(entry.get("version", "")) < target_norm
+                    for entry in version_data
+                ):
+                    break
+                if page >= 10:
                     break
                 page += 1
         except Exception as e:

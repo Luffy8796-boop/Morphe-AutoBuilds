@@ -135,11 +135,37 @@ def download_platform(
 ) -> tuple[Path | None, str | None, list[str]]:
     try:
         config_path = Path("apps") / platform / f"{app_name}.json"
-        if not config_path.exists():
-            raise FileNotFoundError(f"Config file not found: {config_path}")
+        config = None
+        if config_path.exists():
+            with config_path.open() as json_file:
+                config = json.load(json_file)
+        else:
+            # Fallback: search other platform config directories for this app
+            for other_platform in ["apkmirror", "uptodown", "apkpure", "aptoide", "github"]:
+                if other_platform == platform:
+                    continue
+                other_path = Path("apps") / other_platform / f"{app_name}.json"
+                if other_path.exists():
+                    try:
+                        with other_path.open() as json_file:
+                            other_cfg = json.load(json_file)
+                        if other_cfg.get("package"):
+                            config = {
+                                "name": other_cfg.get("name", app_name),
+                                "package": other_cfg["package"],
+                                "version": other_cfg.get("version", ""),
+                                "arch": other_cfg.get("arch", "universal"),
+                                "type": other_cfg.get("type", "APK"),
+                                "dpi": other_cfg.get("dpi", "nodpi"),
+                                "org": other_cfg.get("org", app_name)
+                            }
+                            logging.info(f"Synthesized {platform} config for {app_name} from {other_platform}")
+                            break
+                    except Exception:
+                        continue
 
-        with config_path.open() as json_file:
-            config = json.load(json_file)
+        if not config or not config.get("package"):
+            raise FileNotFoundError(f"Config file not found for {app_name} on {platform}")
         
         # Override arch only if explicitly specified non-universal, or if config has no arch set
         if arch and arch != "universal":
