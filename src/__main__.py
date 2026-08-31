@@ -299,16 +299,18 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
                 options_file = None
                 if "Change package name" in ' '.join(include_patches):
                     options_file = Path(f"morphe-options-{app_name}.json")
+                    original_package = config.get('package', '')
+                    new_package = f"{original_package}.morphe"
                     options_json = {
                         "options": {
                             "Change package name": {
-                                "package_name": f"{config.get('package', '').rsplit('.', 1)[0]}.{app_name}"
+                                "package_name": new_package
                             }
                         }
                     }
                     with options_file.open('w') as f:
                         json.dump(options_json, f, indent=2)
-                    logging.info(f"Created options file for package name change: {options_file}")
+                    logging.info(f"Created options file for package name change: {original_package} -> {new_package}")
                 
                 patch_error: subprocess.CalledProcessError | None = None
                 try:
