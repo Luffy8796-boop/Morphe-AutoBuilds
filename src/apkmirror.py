@@ -581,21 +581,21 @@ def get_architecture_criteria(arch: str) -> dict:
 def get_latest_version(app_name: str, config: dict) -> str:
     global _blocked_by_cloudflare
     _blocked_by_cloudflare = False
-    # First try: get from main app page
+    # First try: get from main app page (e.g. /apk/org/name/)
     try:
         main_url = f"{base_url}/apk/{config['org']}/{config['name']}/"
         response = _cf_get(main_url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, "html.parser")
-            # Try to find version in the page
-            version_elem = soup.find('span', string=re.compile(r'\d+\.\d+'))
-            if version_elem:
-                version_text = version_elem.text.strip()
-                match = re.search(r'(\d+(\.\d+)+)', version_text)
+            for h5 in soup.find_all("h5", class_="appRowTitle"):
+                row_text = h5.get_text(strip=True)
+                if any(skip in row_text.lower() for skip in ["wear os", "daydream", "automotive", "android tv", "beta", "alpha"]):
+                    continue
+                match = re.search(r'(\d+(\.\d+)+)', row_text)
                 if match:
                     return match.group(1)
-    except:
-        pass  # If fails, continue to original method
+    except Exception:
+        pass
     
     # Original method (keep exactly as you had it)
     url = f"{base_url}/uploads/?appcategory={config['name']}"
