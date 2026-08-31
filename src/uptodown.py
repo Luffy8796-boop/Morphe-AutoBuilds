@@ -120,6 +120,45 @@ def _direct_url_from_page(soup: BeautifulSoup, page_url: str) -> str | None:
     return None
 
 
+def _variant_file_id(base_url: str, data_code: str, version_page: BeautifulSoup, arch: str) -> str | None:
+    """Select an Uptodown variant as rvb does before opening the -x page."""
+    variants_button = version_page.select_one(".button.variants[data-version]")
+    if not variants_button:
+        return None
+    data_version = variants_button.get("data-version")
+    catalog_url = f"{base_url.rsplit('/android', 1)[0]}/app/{data_code}/version/{data_version}/files"
+    response = _get(catalog_url)
+    if not response or response.status_code != 200:
+        return None
+    try:
+        content = (response.json() or {}).get("content") or ""
+    except ValueError:
+        return None
+    soup = BeautifulSoup(content, "html.parser")
+    requested = "armeabi-v7a" if arch == "arm-v7a" else arch
+    current_arch = ""
+    fallback_id = None
+    for node in soup.select("section.variants > .content > *"):
+        classes = node.get("class", [])
+        if node.name == "p":
+            current_arch = node.get_text(" ", strip=True).lower()
+            continue
+        if "variant" not in classes:
+            continue
+        report = node.select_one(".v-report[data-file-id]")
+        if not report:
+            continue
+        file_id = report.get("data-file-id")
+        if not fallback_id:
+            fallback_id = file_id
+        # Prefer full/universal variants, then the requested ABI.
+        if arch == "universal" and "arm64-v8a" in current_arch and "armeabi-v7a" in current_arch:
+            return file_id
+        if requested and requested in current_arch:
+            return file_id
+    return fallback_id
+
+
 def get_download_link(version: str, app_name: str, config: dict) -> str | None:
     if not version:
         return None
@@ -151,7 +190,19 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
             page_response = _get(version_url) if version_url.startswith("http") else None
             if not page_response:
                 continue
-            link = _direct_url_from_page(BeautifulSoup(page_response.content, "html.parser"), page_response.url)
+            version_soup = BeautifulSoup(page_response.content, "html.parser")
+            # The main file is often a split/XAPK. Resolve the public variants
+            # catalog first, then use its -x page just like rvb.
+            variant_id = _variant_file_id(base_url, data_code, version_soup, config.get("arch", "universal"))
+            if variant_id:
+                variant_response = _get(f"{base_url}/download/{variant_id}-x")
+                if variant_response:
+                    link = _direct_url_from_page(
+                        BeautifulSoup(variant_response.content, "html.parser"), variant_response.url
+                    )
+                    if link:
+                        return link
+            link = _direct_url_from_page(version_soup, page_response.url)
             if link:
                 return link
             logging.warning(

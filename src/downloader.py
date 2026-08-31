@@ -9,7 +9,8 @@ from src import (
     uptodown,
     aptoide,
     apkmirror,
-    github
+    github,
+    apkcombo,
 )
 
 def download_resource(url: str, name: str = None) -> Path:
@@ -141,7 +142,7 @@ def download_platform(
                 config = json.load(json_file)
         else:
             # Fallback: search other platform config directories for this app
-            for other_platform in ["apkmirror", "uptodown", "apkpure", "aptoide", "github"]:
+            for other_platform in ["apkmirror", "uptodown", "apkpure", "aptoide", "github", "apkcombo"]:
                 if other_platform == platform:
                     continue
                 other_path = Path("apps") / other_platform / f"{app_name}.json"
@@ -260,6 +261,15 @@ def download_uptodown(
     override_version: str = None,
 ) -> tuple[Path | None, str | None, list[str]]:
     return download_platform(app_name, "uptodown", cli, patches, arch, override_version)
+
+def download_apkcombo(
+    app_name: str,
+    cli: str,
+    patches: str,
+    arch: str = None,
+    override_version: str = None,
+) -> tuple[Path | None, str | None, list[str]]:
+    return download_platform(app_name, "apkcombo", cli, patches, arch, override_version)
 
 def download_apkeditor() -> Path:
     max_retries = 3

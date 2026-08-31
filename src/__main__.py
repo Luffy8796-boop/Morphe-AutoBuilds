@@ -108,6 +108,7 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
         downloader.download_github,
         downloader.download_uptodown,
         downloader.download_apkpure,
+        downloader.download_apkcombo,
     ]
 
     input_apk = None

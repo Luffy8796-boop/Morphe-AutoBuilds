@@ -40,6 +40,20 @@ def _cf_get(url, **kwargs):
     if response.status_code == 403:
         body = response.text[:2000].lower()
         if response.headers.get("cf-mitigated") == "challenge" or "cloudflare" in body:
+            # CI jobs provide Trawl, the same browser-rendering service used by
+            # rvb.  It supplies ordinary page HTML/cookies; if it is absent or
+            # cannot obtain a page, preserve the existing provider fallback.
+            try:
+                from src import trawl
+
+                rendered = trawl.fetch(url)
+                if rendered:
+                    for name, value in rendered.cookies.items():
+                        session.cookies.set(name, value, domain=".apkmirror.com")
+                    logging.info("APKMirror page obtained through the CI browser service")
+                    return rendered
+            except Exception as exc:
+                logging.debug("APKMirror browser-service fallback failed: %s", exc)
             _blocked_by_cloudflare = True
             logging.warning(
                 "APKMirror served a Cloudflare challenge; skipping APKMirror "
