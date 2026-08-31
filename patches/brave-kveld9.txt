@@ -1,0 +1,2 @@
++ Block Brave Telemetry
++ PNG Asset Optimizer

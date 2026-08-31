@@ -1,3 +1,2 @@
 + Clone App
 + Change package name
-+ PNG Asset Optimizer
