@@ -16,7 +16,7 @@
   },
   {
     "app_name": "brave",
-    "source": "github",
+    "source": "morphe",
     "arches": ["arm64-v8a"]
   },
   {

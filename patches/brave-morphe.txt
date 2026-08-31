@@ -1,5 +1,3 @@
 + Clone App
 + Change package name
-+ Block Brave Telemetry
 + PNG Asset Optimizer
-
