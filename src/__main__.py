@@ -5,12 +5,52 @@ from sys import exit
 from pathlib import Path
 from os import getenv
 import subprocess
+import zipfile
 from src import (
     r2,
     utils,
     release,
     downloader
 )
+
+
+def _filter_apk_locales(apk_path: Path, locales: list[str]) -> None:
+    """Remove resource directories whose locale is not in the allowlist."""
+    allowed = {locale.lower().replace('_', '-') for locale in locales}
+    temporary_path = apk_path.with_name(f".{apk_path.name}.locales.tmp")
+
+    def locale_from_qualifiers(qualifiers: list[str]) -> str | None:
+        if not qualifiers:
+            return None
+        if qualifiers[0].startswith('b+'):
+            return qualifiers[0][2:].replace('+', '-').lower()
+        if not re.fullmatch(r'[a-zA-Z]{2,3}', qualifiers[0]):
+            return None
+        locale = qualifiers[0].lower()
+        if len(qualifiers) > 1 and re.fullmatch(r'r[a-zA-Z]{2}|r\d{3}', qualifiers[1]):
+            locale += f"-{qualifiers[1][1:].lower()}"
+        return locale
+
+    try:
+        with zipfile.ZipFile(apk_path, 'r') as source, zipfile.ZipFile(
+            temporary_path, 'w'
+        ) as destination:
+            for entry in source.infolist():
+                parts = entry.filename.split('/')
+                remove_entry = False
+                if len(parts) > 2 and parts[0] == 'res':
+                    locale = locale_from_qualifiers(parts[1].split('-')[1:])
+                    if locale and not any(
+                        locale == language or locale.startswith(f"{language}-")
+                        for language in allowed
+                    ):
+                        remove_entry = True
+                if not remove_entry:
+                    destination.writestr(entry, source.read(entry))
+        temporary_path.replace(apk_path)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
 
 def _should_retry_with_older_version(output: str | None) -> bool:
     """Detect common patterns that indicate the chosen app version is not
@@ -197,7 +237,7 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
             if arch == "arm64-v8a":
                 utils.run_process([
                     "zip", "--delete", str(input_apk),
-                    "lib/x86/*", "lib/x86_64/*", "lib/armeabi-v7a/*"
+                    "lib/x86/*", "lib/x86_64/*", "lib/armeabi/*", "lib/armeabi-v7a/*"
                 ], silent=True, check=False)
             elif arch == "armeabi-v7a":
                 utils.run_process([
@@ -209,6 +249,11 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
                 "zip", "--delete", str(input_apk),
                 "lib/x86/*", "lib/x86_64/*"
             ], silent=True, check=False)
+
+        locales = config.get("locales", [])
+        if locales:
+            logging.info(f"Removing APK resources outside locales: {locales}")
+            _filter_apk_locales(input_apk, locales)
 
         # FIX: Repair corrupted APK (e.g. from Uptodown) ONLY when integrity check fails.
         # Previously this ran on every build and could silently alter healthy APKs.
