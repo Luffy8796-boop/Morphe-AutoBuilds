@@ -104,12 +104,28 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
             
             # If version not found in filenames, try matching by architecture only
             # (for releases where version isn't in asset name, like Brave)
+            # Prioritize: mono > bundle > universal
             if arch_patterns:  # Only if arch was specified
+                preferred_assets = []
                 for asset in data.get("assets", []):
                     name = asset.get("name", "").lower()
                     if name.endswith((".apk", ".apkm", ".xapk")) and any(p in name for p in arch_patterns):
-                        logging.info(f"Matched GitHub asset by arch only for {app_name} {version}: {name}")
-                        return asset.get("browser_download_url")
+                        # Score for preference: higher = better
+                        score = 0
+                        if "mono" in name:
+                            score = 3
+                        elif "bundle" in name:
+                            score = 2
+                        elif "universal" in name:
+                            score = 1
+                        preferred_assets.append((score, name, asset))
+                
+                if preferred_assets:
+                    # Sort by score descending, then by name for consistency
+                    preferred_assets.sort(key=lambda x: (-x[0], x[1]))
+                    best_asset = preferred_assets[0][2]
+                    logging.info(f"Matched GitHub asset by arch only for {app_name} {version}: {best_asset.get('name')}")
+                    return best_asset.get("browser_download_url")
             
             # Last resort: just grab first APK-like asset
             for asset in data.get("assets", []):
