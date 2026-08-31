@@ -1,4 +1,4 @@
 + Clone App
 + Change package name
-- Block Telemetry
++ Block Brave Telemetry
 
