@@ -78,6 +78,22 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
                 if version in name and name.endswith((".apk", ".apkm", ".xapk")):
                     logging.info(f"Fallback arch: Found GitHub download link for {app_name} {version}")
                     return asset.get("browser_download_url")
+            
+            # If version not found in filenames, try matching by architecture only
+            # (for releases where version isn't in asset name, like Brave)
+            if arch not in ("all", "both"):
+                for asset in data.get("assets", []):
+                    name = asset.get("name", "").lower()
+                    if name.endswith((".apk", ".apkm", ".xapk")) and arch in name:
+                        logging.info(f"Matched GitHub asset by arch only for {app_name} {version}: {name}")
+                        return asset.get("browser_download_url")
+            
+            # Last resort: just grab first APK-like asset
+            for asset in data.get("assets", []):
+                name = asset.get("name", "").lower()
+                if name.endswith((".apk", ".apkm", ".xapk")):
+                    logging.info(f"Using first available APK asset for {app_name} {version}: {name}")
+                    return asset.get("browser_download_url")
                     
     except Exception as e:
         logging.error(f"Failed to get GitHub download link for {app_name}: {e}")
