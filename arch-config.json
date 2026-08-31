@@ -16,8 +16,8 @@
   },
   {
     "app_name": "brave",
-    "source": "morphe",
-    "arches": ["universal"]
+    "source": "github",
+    "arches": ["arm64-v8a"]
   },
   {
     "app_name": "instagram",

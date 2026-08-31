@@ -63,12 +63,25 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
             data = response.json()
             arch = config.get("arch", "arm64-v8a").lower()
             
+            # Normalize arch for filename matching
+            arch_patterns = []
+            if arch in ("all", "both", "universal"):
+                arch_patterns = [""]  # Match any
+            elif "arm64" in arch:
+                arch_patterns = ["arm64"]
+            elif "armeabi-v7a" in arch or "armv7" in arch:
+                arch_patterns = ["armeabi", "v7", "32"]
+            elif "x86_64" in arch:
+                arch_patterns = ["x86_64", "x64"]
+            elif "x86" in arch:
+                arch_patterns = ["x86"]
+            
             for asset in data.get("assets", []):
                 name = asset.get("name", "").lower()
                 # Check version and extension
                 if version in name and name.endswith((".apk", ".apkm", ".xapk")):
-                    # Check architecture match if arch is specified, allow all/both to passthrough
-                    if arch in ("all", "both") or arch in name:
+                    # Check architecture match if arch is specified
+                    if not arch_patterns or any(p in name for p in arch_patterns):
                         logging.info(f"Found GitHub download link for {app_name} {version}")
                         return asset.get("browser_download_url")
                         
@@ -81,10 +94,10 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
             
             # If version not found in filenames, try matching by architecture only
             # (for releases where version isn't in asset name, like Brave)
-            if arch not in ("all", "both"):
+            if arch_patterns:  # Only if arch was specified
                 for asset in data.get("assets", []):
                     name = asset.get("name", "").lower()
-                    if name.endswith((".apk", ".apkm", ".xapk")) and arch in name:
+                    if name.endswith((".apk", ".apkm", ".xapk")) and any(p in name for p in arch_patterns):
                         logging.info(f"Matched GitHub asset by arch only for {app_name} {version}: {name}")
                         return asset.get("browser_download_url")
             
