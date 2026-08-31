@@ -1,0 +1,7 @@
+{
+    "repo": "brave/brave-browser",
+    "tag": "latest",
+    "package": "com.brave.browser",
+    "arch": "arm64-v8a",
+    "version": ""
+}
