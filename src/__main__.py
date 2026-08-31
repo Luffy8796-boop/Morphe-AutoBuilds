@@ -67,6 +67,12 @@ def _should_retry_with_older_version(output: str | None) -> bool:
 
 def run_build(app_name: str, source: str, arch: str = "universal") -> str:
     """Build APK for specific architecture"""
+    config = {}
+    config_path = Path("apps") / "apkmirror" / f"{app_name}.json"
+    if config_path.exists():
+        with config_path.open() as config_file:
+            config = json.load(config_file)
+
     download_files, name = downloader.download_required(source)
 
     # Log downloaded files for debugging
