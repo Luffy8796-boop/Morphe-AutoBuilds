@@ -294,6 +294,22 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
             # USE DIFFERENT COMMANDS BASED ON SOURCE TYPE
             if is_morphe:
                 logging.info("🔧 Using Morphe patching system...")
+                
+                # Create options file for patch configuration (e.g., package name change)
+                options_file = None
+                if "Change package name" in ' '.join(include_patches):
+                    options_file = Path(f"morphe-options-{app_name}.json")
+                    options_json = {
+                        "options": {
+                            "Change package name": {
+                                "package_name": f"{config.get('package', '').rsplit('.', 1)[0]}.{app_name}"
+                            }
+                        }
+                    }
+                    with options_file.open('w') as f:
+                        json.dump(options_json, f, indent=2)
+                    logging.info(f"Created options file for package name change: {options_file}")
+                
                 patch_error: subprocess.CalledProcessError | None = None
                 try:
                     morphe_cmd = [
@@ -302,6 +318,8 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
                         "--out", str(output_apk), str(input_apk),
                         *exclude_patches, *include_patches
                     ]
+                    if options_file:
+                        morphe_cmd.extend(["--options", str(options_file)])
                     utils.run_process(morphe_cmd, capture=True, stream=True)
                 except subprocess.CalledProcessError as e:
                     # Remember the original failure so the retry logic below can
@@ -316,6 +334,8 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
                         "--output", str(output_apk),
                         *exclude_patches, *include_patches
                     ]
+                    if options_file:
+                        morphe_cmd.extend(["--options", str(options_file)])
                     try:
                         utils.run_process(morphe_cmd, capture=True, stream=True)
                     except subprocess.CalledProcessError as e2:
