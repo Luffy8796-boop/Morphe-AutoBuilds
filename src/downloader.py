@@ -141,8 +141,12 @@ def download_platform(
         with config_path.open() as json_file:
             config = json.load(json_file)
         
-        # Override arch only if explicitly specified non-universal, or if config has no arch set
-        if arch and arch != "universal":
+        # APKMirror may only provide a universal source bundle. Keep that
+        # source selection and apply the requested build architecture later.
+        configured_arch = (config.get("arch") or "").lower()
+        if arch and arch != "universal" and not (
+            platform == "apkmirror" and configured_arch == "universal"
+        ):
             config['arch'] = arch
         elif 'arch' not in config or not config['arch']:
             config['arch'] = arch or "universal"
