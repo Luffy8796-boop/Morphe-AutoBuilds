@@ -16,7 +16,12 @@ def get_latest_version(app_name: str, config: dict) -> str | None:
         logging.error(f"Missing 'repo' or 'tag' in github config for {app_name}")
         return None
     
-    url = f"https://api.github.com/repos/{repo}/releases/tags/{tag}"
+    # Use /releases/latest for "latest" tag, otherwise use /releases/tags/{tag}
+    if tag.lower() == "latest":
+        url = f"https://api.github.com/repos/{repo}/releases/latest"
+    else:
+        url = f"https://api.github.com/repos/{repo}/releases/tags/{tag}"
+    
     try:
         response = session.get(url, headers=_get_headers())
         if response.status_code == 200:
@@ -55,8 +60,13 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
     tag = config.get("tag")
     if not repo or not tag:
         return None
+    
+    # Use /releases/latest for "latest" tag, otherwise use /releases/tags/{tag}
+    if tag.lower() == "latest":
+        url = f"https://api.github.com/repos/{repo}/releases/latest"
+    else:
+        url = f"https://api.github.com/repos/{repo}/releases/tags/{tag}"
         
-    url = f"https://api.github.com/repos/{repo}/releases/tags/{tag}"
     try:
         response = session.get(url, headers=_get_headers())
         if response.status_code == 200:
