@@ -13,22 +13,27 @@ def get_latest_version(app_name: str, config: dict) -> str:
         url = f"https://{uptodown_name}.en.uptodown.com/android/versions"
         try:
             response = session.get(url)
-            if response.status_code == 200:
+            # Avoid category page redirects
+            if response.status_code == 200 and not any(response.url.endswith(cat) for cat in ['/personalization', '/general-android', '/sports', '/education-languages', '/multimedia', '/tools', '/lifestyle', '/communication']):
                 content_size = len(response.content)
-                logging.info(f"✓ Found: {response.url}")
                 soup = BeautifulSoup(response.content, "html.parser")
                 version_spans = soup.select('#versions-items-list .version')
-                versions = [span.text for span in version_spans]
+                versions = [span.text.strip() for span in version_spans if span.text.strip()]
                 
                 if versions:
-                    highest_version = max(versions)
-                    logging.info(f"Found version {highest_version} for {app_name}")
+                    highest_version = versions[0]
+                    logging.info(f"✓ Found version {highest_version} for {app_name} on {response.url}")
                     return highest_version
+                
+                # Check main page
+                ver_tag = soup.find("div", class_="version") or soup.find(attrs={"itemprop": "softwareVersion"})
+                if ver_tag and ver_tag.text.strip():
+                    v = ver_tag.text.strip()
+                    logging.info(f"✓ Found main page version {v} for {app_name} on {response.url}")
+                    return v
             elif response.status_code == 404:
                 logging.debug(f"✗ Not found: {url}")
                 continue
-            else:
-                response.raise_for_status()
         except Exception as e:
             logging.debug(f"Failed for {url}: {str(e)[:50]}...")
             continue

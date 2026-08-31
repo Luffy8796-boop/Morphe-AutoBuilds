@@ -466,6 +466,28 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
     rows = found_soup.find_all('div', class_='table-row headerFont')
     download_page_url = None
     
+    def _row_matches(row_text: str) -> bool:
+        r = row_text.lower()
+        c_type = (config.get('type') or '').lower()
+        if c_type and c_type not in r:
+            return False
+        
+        t_arch = (target_arch or 'universal').lower()
+        if t_arch in ['universal', 'noarch']:
+            if not any(a in r for a in ['universal', 'noarch', 'arm64-v8a', 'armeabi-v7a', 'arm64', 'arm']):
+                return False
+        elif t_arch not in r:
+            return False
+
+        c_dpi = (config.get('dpi') or 'nodpi').lower()
+        if c_dpi in ['nodpi', '120-640dpi', 'all', '']:
+            # All DPIs acceptable for universal/nodpi/bundle
+            pass
+        elif c_dpi not in r:
+            return False
+
+        return True
+
     # Try to find exact version match first
     for row in rows:
         row_text = row.get_text()
@@ -473,7 +495,7 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
         # Check if row contains our exact version
         if version in row_text or version.replace('.', '-') in row_text:
             # Check criteria
-            if all(criterion in row_text for criterion in criteria):
+            if _row_matches(row_text):
                 sub_url = row.find('a', class_='accent_color')
                 if sub_url:
                     download_page_url = base_url + sub_url['href']
@@ -483,7 +505,7 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
     if not download_page_url:
         for row in rows:
             row_text = row.get_text()
-            if all(criterion in row_text for criterion in criteria):
+            if _row_matches(row_text):
                 # Check if this looks like a variant row (has version numbers)
                 if re.search(r'\d+(\.\d+)+', row_text):
                     sub_url = row.find('a', class_='accent_color')
