@@ -66,7 +66,7 @@
     { "app_name": "komoot", "source": "brosssh" },
     { "app_name": "hevy", "source": "brosssh" },
     { "app_name": "geocaching", "source": "brosssh" },
-    { "app_name": "nova", "source": "dropped" },
+    { "app_name": "nova", "source": "rushiranpise" },
     { "app_name": "earphone", "source": "tosox" },
     { "app_name": "flatastic", "source": "tosox" },
     { "app_name": "kicker", "source": "tosox" },
@@ -97,6 +97,7 @@
     { "app_name": "pokecardex", "source": "almewty" },
     { "app_name": "gamehub", "source": "liaralabs" },
     { "app_name": "dialer", "source": "taknok" },
+    { "app_name": "capcut", "source": "rushiranpise" },
     { "app_name": "windscribe", "source": "rushiranpise-dev" }
     
   ]
