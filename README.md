@@ -71,7 +71,7 @@ This repository utilizes a robust Python-based pipeline to ensure high reliabili
 * **Granular Patch Control:** Simple text-based configuration allows for precise inclusion or exclusion of specific patches.
 * **Smart Failover:** The system automatically switches download sources if a fetch attempt fails.
 * **Auto-Signing:** All APKs are signed with a consistent public keystore, making them ready to install immediately.
-* **Clean Release Cycle:** Previous releases are replaced rather than archived, preventing clutter and making it easy for external managers (like Orion) to track updates.
+* **Obtanium-Compatible Releases:** Each publication gets a unique timestamped release tag, while GitHub's latest release continues to contain the complete current APK set.
 
 ---
 

@@ -129,6 +129,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "release_tag=build-$(date -u +'%Y%m%d%H%M%S')-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
           if gh release view latest >/dev/null 2>&1; then
             echo "✅ Release 'latest' exists"
             echo "release_exists=true" >> $GITHUB_OUTPUT
@@ -143,12 +144,30 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔄 Updating release efficiently..."
+
+          : > keep_apks.txt
+          for apk in *.apk; do
+            [ -f "$apk" ] || continue
+            echo "$apk" >> keep_apks.txt
+          done
+          if [ "${{ steps.check-release.outputs.release_exists }}" == "true" ]; then
+            python scripts/cleanup_old_apks.py --release latest --keep-file keep_apks.txt || \
+              echo "⚠️  Previous release cleanup failed; carrying assets forward"
+          fi
           
           # 1. GENERATE FILE LIST FOR NOTES
           # We fetch the list of names via API so the release notes remain accurate
           # without needing to download the actual heavy APK files.
           if [ "${{ steps.check-release.outputs.release_exists }}" == "true" ]; then
             gh release view latest --json assets --jq '.assets[].name' > current_assets.txt
+            mkdir -p previous-apks
+            gh release download latest --dir previous-apks --pattern '*.apk' --clobber
+            gh release download latest --dir . --pattern 'manifest.json' --clobber || true
+            for previous_apk in previous-apks/*.apk; do
+              [ -f "$previous_apk" ] || continue
+              apk_name=$(basename "$previous_apk")
+              [ -e "$apk_name" ] || cp "$previous_apk" .
+            done
           else
             touch current_assets.txt
           fi
@@ -183,39 +202,15 @@ jobs:
           EOF
           
           # 3. PERFORM UPDATE (CLOBBER) OR CREATE
-          if [ "${{ steps.check-release.outputs.release_exists }}" == "true" ]; then
-            echo "⬆️ Uploading new assets (clobbering existing)..."
+          echo "🚀 Creating versioned release ${release_tag}..."
+          gh release create "${release_tag}" \
+            --title "Morphe APKs - $(date -u +'%Y-%m-%d %H:%M UTC')" \
+            --notes-file release_notes.md \
+            *.apk \
+            --latest
 
-            # Delete superseded older-version APKs for this app/arch before upload.
-            # --clobber only overwrites exact filenames; since APK names embed the
-            # version, the old version (e.g. v2.4.0) would otherwise remain next
-            # to the new v2.5.0. cleanup_old_apks.py removes any release APK that
-            # shares a {app}-{arch}- prefix with a freshly built APK but has a
-            # different version.
-            : > keep_apks.txt
-            for apk in *.apk; do
-              [ -f "$apk" ] || continue
-              echo "$apk" >> keep_apks.txt
-            done
-            python scripts/cleanup_old_apks.py --release latest --keep-file keep_apks.txt || \
-              echo "⚠️  cleanup_old_apks.py failed; continuing with clobber upload"
-
-            # --clobber overwrites the file if it exists, adds it if it doesn't
-            gh release upload latest *.apk --clobber
-
-            echo "📝 Updating release title and notes..."
-            gh release edit latest \
-              --title "Morphe APKs - $(date +'%Y-%m-%d %H:%M')" \
-              --notes-file release_notes.md
-              
-          else
-            echo "🚀 Creating new release..."
-            gh release create "latest" \
-              --title "Morphe APKs - $(date +'%Y-%m-%d %H:%M')" \
-              --notes-file release_notes.md \
-              *.apk \
-              --latest
-          fi
+          python scripts/cleanup_old_apks.py --release "${release_tag}" --keep-file keep_apks.txt || \
+            echo "⚠️  cleanup_old_apks.py failed; continuing with published assets"
           
           echo "✅ Release updated successfully!"
       
@@ -224,7 +219,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          release_url=$(gh release view latest --json url --jq .url)
+          release_url=$(gh release view "${release_tag}" --json url --jq .url)
           echo "🔗 Updated Release URL: $release_url"
           echo ""
           echo "📦 Direct APK links:"

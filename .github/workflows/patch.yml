@@ -265,6 +265,15 @@ jobs:
         run: |
           mkdir -p ./release-apks
           echo "📦 Collecting rebuilt APKs..."
+          if gh release view latest >/dev/null 2>&1; then
+            : > keep_apks.txt
+            find ./all-apks -name "*.apk" -exec basename {} \; >> keep_apks.txt
+            python scripts/cleanup_old_apks.py --release latest --keep-file keep_apks.txt || \
+              echo "⚠️  Previous release cleanup failed; carrying assets forward"
+            echo "📥 Carrying forward APKs from the previous release..."
+            gh release download latest --dir ./release-apks --pattern '*.apk' --clobber
+            gh release download latest --dir ./release-apks --pattern 'manifest.json' --clobber || true
+          fi
           find ./all-apks -name "*.apk" -exec cp -f {} ./release-apks/ \; 2>/dev/null || true
 
           echo "📁 APKs ready for release:"
@@ -311,6 +320,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "release_tag=build-$(date -u +'%Y%m%d%H%M%S')-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
           if gh release view latest >/dev/null 2>&1; then
             echo "release_exists=true" >> "$GITHUB_OUTPUT"
             echo "✅ Release 'latest' exists; assets will be updated in place."
@@ -376,7 +386,7 @@ jobs:
           ## 🔄 Update Schedule
           - Automatic updates daily at 6 AM UTC
           - Manual updates available via workflow dispatch
-          - Creates `latest` if missing and uploads rebuilt assets in place
+          - Creates a unique versioned release and marks it as latest
           EOF
       
       - name: Upload Or Create Release
@@ -404,36 +414,15 @@ jobs:
             echo "📎 Including manifest.json"
           fi
 
-          if [ "${{ steps.check-release.outputs.release_exists }}" = "true" ]; then
-            echo "⬆️ Uploading rebuilt assets in place and refreshing release metadata..."
+          echo "🆕 Creating versioned release ${release_tag}..."
+          gh release create "${release_tag}" \
+            --title "Morphe APKs - $(date -u +'%Y-%m-%d %H:%M UTC')" \
+            --notes-file release_notes.md \
+            "${ASSETS[@]}" \
+            --latest
 
-            # Delete superseded older-version APKs. The previous loop only deleted
-            # assets whose filename EXACTLY matched a new APK; since APK names
-            # embed the version, old versions (e.g. v2.4.0) never matched the new
-            # v2.5.0 and accumulated forever. cleanup_old_apks.py deletes any
-            # release APK sharing a {app}-{arch}- identity prefix with a new APK
-            # but with a different version.
-            : > keep_apks.txt
-            for apk in ./release-apks/*.apk; do
-              [ -f "$apk" ] || continue
-              basename "$apk" >> keep_apks.txt
-            done
-            python scripts/cleanup_old_apks.py --release latest --keep-file keep_apks.txt || \
-              echo "⚠️  cleanup_old_apks.py failed; continuing with exact-name cleanup"
-
-            # Upload new APKs and manifest
-            gh release upload latest "${ASSETS[@]}" --clobber
-            gh release edit latest \
-              --title "Morphe APKs - $(date +'%Y-%m-%d %H:%M')" \
-              --notes-file release_notes.md
-          else
-            echo "🆕 Creating 'latest' release..."
-            gh release create "latest" \
-              --title "Morphe APKs - $(date +'%Y-%m-%d %H:%M')" \
-              --notes-file release_notes.md \
-              "${ASSETS[@]}" \
-              --latest
-          fi
+          python scripts/cleanup_old_apks.py --release "${release_tag}" --keep-file keep_apks.txt || \
+            echo "⚠️  cleanup_old_apks.py failed; continuing with published assets"
 
           echo "✅ Release publish step completed successfully!"
       
@@ -443,7 +432,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          release_url=$(gh release view latest --json url --jq .url)
+          release_url=$(gh release view "${release_tag}" --json url --jq .url)
           echo "🔗 Release URL: $release_url"
           echo ""
           echo "📦 Direct Download Links:"
