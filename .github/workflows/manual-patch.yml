@@ -129,7 +129,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "release_tag=build-$(date -u +'%Y%m%d%H%M%S')-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+          echo "release_tag=v$(date -u +'%Y.%m.%d').${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
           if gh release view latest >/dev/null 2>&1; then
             echo "✅ Release 'latest' exists"
             echo "release_exists=true" >> $GITHUB_OUTPUT
