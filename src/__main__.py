@@ -307,7 +307,12 @@ def run_build(
         # Validate APK integrity (safety net: downloads were already validated,
         # but bundle merging / arch stripping can corrupt the file).
         logging.info("Checking APK integrity...")
-        input_apk = utils.ensure_usable_apk(input_apk, app_name, version or "")
+        input_apk = utils.ensure_usable_apk(
+            input_apk,
+            app_name,
+            version or "",
+            require_signature=False,
+        )
         if input_apk is None:
             logging.error(f"APK for {app_name} v{version} is corrupt and could not be repaired; trying next version")
             continue

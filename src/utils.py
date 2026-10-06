@@ -840,8 +840,13 @@ def is_apk_signed(apk_path: Path) -> bool:
     return False
 
 
-def ensure_usable_apk(apk_path: Path, app_name: str, version: str) -> Path | None:
-    """Return ``apk_path`` if it passes integrity and signature checks.
+def ensure_usable_apk(
+    apk_path: Path,
+    app_name: str,
+    version: str,
+    require_signature: bool = True,
+) -> Path | None:
+    """Return ``apk_path`` if it passes integrity and optional signature checks.
 
     Otherwise attempt a ``zip -FF`` repair and re-check.  A file that is
     still corrupt afterwards, or that carries no Android signature, is
@@ -852,7 +857,7 @@ def ensure_usable_apk(apk_path: Path, app_name: str, version: str) -> Path | Non
     def _good(path: Path) -> bool:
         if not check_apk_integrity(path):
             return False
-        if not is_apk_signed(path):
+        if require_signature and not is_apk_signed(path):
             logging.warning(
                 f"APK {path.name} has no Android signature; discarding download")
             return False
