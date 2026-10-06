@@ -22,12 +22,14 @@ on:
         type: string
         default: ''
       architecture:
-        description: 'Architecture to build'
+        description: 'Stock APK architecture to download; output is always arm64-v8a'
         required: false
         type: choice
         options:
           - arm64-v8a
-        default: 'arm64-v8a'
+          - armeabi-v7a
+          - universal
+        default: 'universal'
       replace_in_release:
         description: 'Replace APK in existing release'
         required: true
@@ -86,11 +88,12 @@ jobs:
         env:
           APP_NAME: ${{ inputs.app_name }}
           SOURCE: ${{ inputs.source }}
-          ARCH: ${{ inputs.architecture }}
+          ARCH: arm64-v8a
+          APK_ARCH: ${{ inputs.architecture }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRAWL_URL: http://localhost:8191
         run: |
-          echo "🔧 Building ${{ inputs.app_name }} with ${{ inputs.source }} for ${{ inputs.architecture }} architecture..."
+          echo "🔧 Building ${{ inputs.app_name }} with ${{ inputs.source }} from a ${{ inputs.architecture }} APK; output is arm64-v8a..."
           python -m src
       
       - name: Find Built APK
@@ -175,7 +178,8 @@ jobs:
           
           **Last Update:** $(date)
           **Updated App:** ${{ inputs.app_name }}
-          **Architecture:** ${{ inputs.architecture }}
+          **Source APK Architecture:** ${{ inputs.architecture }}
+          **Output Architecture:** arm64-v8a
           **Source:** ${{ inputs.source }}
           
           Auto-updates daily at 6 AM UTC.

@@ -14,30 +14,30 @@ from src import (
 )
 
 def _normalize_build_arch(arch: str | None) -> str:
-    """Force all builds to the smallest practical ABI: arm64-v8a.
+    """Keep the produced APK architecture fixed to arm64-v8a."""
+    return "arm64-v8a"
 
-    This keeps builds consistent with the project requirement that APKs are
-    optimized for a single CPU target and stripped of all non-arm64 artifacts.
-    """
-    if not arch:
-        return "arm64-v8a"
 
-    normalized = arch.strip().lower()
+def _normalize_source_arch(arch: str | None) -> str:
+    """Normalize the requested stock APK variant independently of output ABI."""
+    normalized = (arch or "arm64-v8a").strip().lower()
     aliases = {
         "arm64": "arm64-v8a",
         "arm64-v8a": "arm64-v8a",
         "arm64v8a": "arm64-v8a",
-        "arm-v7a": "arm64-v8a",
-        "armeabi-v7a": "arm64-v8a",
-        "armeabi": "arm64-v8a",
-        "armv7": "arm64-v8a",
-        "armv7a": "arm64-v8a",
-        "armv7-abi": "arm64-v8a",
-        "universal": "arm64-v8a",
-        "noarch": "arm64-v8a",
-        "all": "arm64-v8a",
+        "arm-v7a": "armeabi-v7a",
+        "armeabi-v7a": "armeabi-v7a",
+        "armeabi": "armeabi-v7a",
+        "armv7": "armeabi-v7a",
+        "armv7a": "armeabi-v7a",
+        "armv7-abi": "armeabi-v7a",
+        "universal": "universal",
+        "noarch": "universal",
+        "all": "universal",
     }
-    return aliases.get(normalized, normalized)
+    if normalized not in aliases:
+        raise ValueError(f"Unsupported source APK architecture: {arch}")
+    return aliases[normalized]
 
 
 def _should_retry_with_older_version(output: str | None) -> bool:
@@ -53,9 +53,15 @@ def _should_retry_with_older_version(output: str | None) -> bool:
         or "patching aborted" in t
     )
 
-def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
+def run_build(
+    app_name: str,
+    source: str,
+    arch: str = "arm64-v8a",
+    source_arch: str | None = None,
+) -> str:
     """Build APK for the optimized arm64-v8a target."""
     arch = _normalize_build_arch(arch)
+    source_arch = _normalize_source_arch(source_arch or arch)
     download_files, name = downloader.download_required(source)
 
     # Log downloaded files for debugging
@@ -149,7 +155,7 @@ def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
     candidates: list[str] = []
     used_method = None
     for method in download_methods:
-        apk_path, ver, cands = method(app_name, str(cli), str(patches), arch)
+        apk_path, ver, cands = method(app_name, str(cli), str(patches), source_arch)
         if not apk_path:
             continue
         # A corrupt download must never reach the patcher: repair it, and if
@@ -209,7 +215,9 @@ def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
             except Exception:
                 pass
 
-            input_apk, version, _ = used_method(app_name, str(cli), str(patches), arch, override_version=ver)
+            input_apk, version, _ = used_method(
+                app_name, str(cli), str(patches), source_arch, override_version=ver
+            )
             if input_apk is None:
                 continue
             input_apk = utils.ensure_usable_apk(input_apk, app_name, ver)
@@ -294,16 +302,7 @@ def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
 
         # --- ARCHITECTURE-SPECIFIC PROCESSING ---
         logging.info(f"Optimizing APK for arm64-v8a CPU target...")
-        utils.strip_zip_entries(
-            input_apk,
-            [
-                "lib/x86/*",
-                "lib/x86_64/*",
-                "lib/armeabi/*",
-                "lib/armeabi-v7a/*",
-                "lib/arm-linux-androideabi/*",
-            ],
-        )
+        utils.strip_non_arm64_libraries(input_apk)
 
         # Validate APK integrity (safety net: downloads were already validated,
         # but bundle merging / arch stripping can corrupt the file).
@@ -360,6 +359,14 @@ def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
                 continue
             raise
 
+        try:
+            utils.strip_non_arm64_libraries(output_apk)
+            if not utils.check_apk_integrity(output_apk):
+                raise RuntimeError("Patched APK failed integrity validation after ABI filtering")
+        except Exception:
+            output_apk.unlink(missing_ok=True)
+            raise
+
         # Patch succeeded -> cleanup input and sign.
         input_apk.unlink(missing_ok=True)
 
@@ -408,6 +415,7 @@ def main():
         exit(1)
 
     requested_arch = _normalize_build_arch(getenv("ARCH"))
+    source_arch = _normalize_source_arch(getenv("APK_ARCH") or getenv("ARCH"))
     arches = [requested_arch]
 
     # Always prefer a single optimized arm64-v8a build. The previous multi-arch
@@ -415,8 +423,10 @@ def main():
     # focused on the target device ABI.
     built_apks = []
     for arch in arches:
-        logging.info(f"🔨 Building {app_name} for {arch} architecture...")
-        apk_path = run_build(app_name, source, arch)
+        logging.info(
+            f"🔨 Building {app_name} for {arch}; downloading {source_arch} source APK..."
+        )
+        apk_path = run_build(app_name, source, arch, source_arch)
         if apk_path:
             built_apks.append(apk_path)
             print(f"✅ Built {arch} version: {Path(apk_path).name}")

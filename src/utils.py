@@ -597,6 +597,38 @@ def strip_zip_entries(zip_path: Path, patterns: list[str]) -> None:
             temp_zip.unlink(missing_ok=True)
 
 
+def strip_non_arm64_libraries(apk_path: Path) -> list[str]:
+    """Remove every native ABI directory except lib/arm64-v8a and verify removal."""
+    with zipfile.ZipFile(apk_path, "r") as archive:
+        abis = {
+            parts[1]
+            for name in archive.namelist()
+            if (parts := name.split("/"))[:1] == ["lib"] and len(parts) > 2
+        }
+
+    unwanted_abis = sorted(abis - {"arm64-v8a"})
+    if not unwanted_abis:
+        return []
+
+    strip_zip_entries(apk_path, [f"lib/{abi}/*" for abi in unwanted_abis])
+
+    with zipfile.ZipFile(apk_path, "r") as archive:
+        remaining_abis = {
+            parts[1]
+            for name in archive.namelist()
+            if (parts := name.split("/"))[:1] == ["lib"] and len(parts) > 2
+        }
+    remaining_unwanted = remaining_abis - {"arm64-v8a"}
+    if remaining_unwanted:
+        raise RuntimeError(
+            "Failed to remove non-arm64 native libraries: "
+            + ", ".join(sorted(remaining_unwanted))
+        )
+
+    logging.info("Removed non-arm64 native libraries for ABI(s): %s", ", ".join(unwanted_abis))
+    return unwanted_abis
+
+
 def _parse_apk_locales(output: str) -> list[str]:
     return [
         match.group(1).lower()

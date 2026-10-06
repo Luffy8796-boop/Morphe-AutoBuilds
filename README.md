@@ -209,7 +209,7 @@ python -m src
 ```bash
 export APP_NAME="youtube"
 export SOURCE="morphe"
-export ARCH="arm64-v8a"  # Options: arm64-v8a, armeabi-v7a, universal
+export APK_ARCH="universal"  # Optional source APK variant: arm64-v8a, armeabi-v7a, universal
 python -m src
 
 ```
