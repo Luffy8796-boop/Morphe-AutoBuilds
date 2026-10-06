@@ -2,6 +2,7 @@ import json
 import os
 import re
 import shutil
+import tempfile
 import time
 import logging
 import zipfile
@@ -594,6 +595,130 @@ def strip_zip_entries(zip_path: Path, patterns: list[str]) -> None:
         logging.debug(f"Failed to strip zip entries: {e}")
         if temp_zip.exists():
             temp_zip.unlink(missing_ok=True)
+
+
+def _parse_apk_locales(output: str) -> list[str]:
+    return [
+        match.group(1).lower()
+        for line in output.splitlines()
+        if (match := re.match(r"\s*\d+\)\s+([A-Za-z0-9-]+)\s*$", line))
+    ]
+
+
+def _resource_directory_locale(directory_name: str, apk_locales: set[str]) -> str | None:
+    qualifiers = directory_name.split("-")[1:]
+    for index, qualifier in enumerate(qualifiers):
+        if qualifier.lower().startswith("b+"):
+            candidate = qualifier[2:].replace("+", "-").lower()
+            if any(locale == candidate or locale.startswith(candidate + "-") for locale in apk_locales):
+                return candidate
+        elif re.fullmatch(r"[a-z]{2,3}", qualifier, re.IGNORECASE) and qualifier.lower() != "car":
+            candidate = qualifier.lower()
+            if index + 1 < len(qualifiers) and re.fullmatch(r"r[A-Z]{2}", qualifiers[index + 1]):
+                candidate += "-" + qualifiers[index + 1][1:].lower()
+            if any(locale == candidate or locale.startswith(candidate + "-") for locale in apk_locales):
+                return candidate
+    return None
+
+
+def _locale_is_kept(locale: str, keep_locales: set[str]) -> bool:
+    return locale == "und" or any(
+        locale == kept
+        or locale.startswith(kept + "-")
+        or kept.startswith(locale + "-")
+        for kept in keep_locales
+    )
+
+
+def slim_apk_locales(apk_path: Path, apk_editor: Path, keep_locales: list[str] | None = None) -> int:
+    """Remove translated Android resource configurations except requested locales."""
+    if not apk_path.exists():
+        raise FileNotFoundError(f"APK not found for locale slimming: {apk_path}")
+
+    keep = {locale.strip().replace("_", "-").lower() for locale in (keep_locales or ["en"]) if locale.strip()}
+    if not keep:
+        keep = {"en"}
+
+    info = run_process(
+        ["java", "-jar", str(apk_editor), "info", "-i", str(apk_path), "-locales"],
+        capture=True,
+        silent=True,
+    ) or ""
+    apk_locales = set(_parse_apk_locales(info))
+    unwanted_locales = {locale for locale in apk_locales if not _locale_is_kept(locale, keep)}
+    if not unwanted_locales:
+        logging.info("Locale slimmer: APK has no removable locales")
+        return 0
+
+    removed_directories = 0
+    with tempfile.TemporaryDirectory(prefix=".locale-slim-", dir=apk_path.parent) as temp_dir:
+        temp_root = Path(temp_dir)
+        decoded_dir = temp_root / "decoded"
+        rebuilt_apk = temp_root / "slimmed.apk"
+
+        run_process(
+            [
+                "java", "-jar", str(apk_editor), "d", "-t", "xml", "-dex",
+                "-i", str(apk_path), "-o", str(decoded_dir),
+            ],
+            capture=True,
+            silent=True,
+        )
+
+        resource_roots = [
+            path for path in (decoded_dir / "resources").glob("*/res") if path.is_dir()
+        ]
+        if not resource_roots:
+            raise RuntimeError("APKEditor did not produce a resource directory")
+
+        for resource_root in resource_roots:
+            for resource_dir in resource_root.iterdir():
+                if not resource_dir.is_dir():
+                    continue
+                locale = _resource_directory_locale(resource_dir.name, apk_locales)
+                if locale and not _locale_is_kept(locale, keep):
+                    shutil.rmtree(resource_dir)
+                    removed_directories += 1
+
+        if not removed_directories:
+            raise RuntimeError(
+                "APKEditor reported removable locales but no matching resource directories were found"
+            )
+
+        run_process(
+            ["java", "-jar", str(apk_editor), "b", "-i", str(decoded_dir), "-o", str(rebuilt_apk)],
+            capture=True,
+            silent=True,
+        )
+        if not check_apk_integrity(rebuilt_apk):
+            raise RuntimeError("APKEditor produced an invalid APK after locale slimming")
+
+        rebuilt_info = run_process(
+            ["java", "-jar", str(apk_editor), "info", "-i", str(rebuilt_apk), "-locales"],
+            capture=True,
+            silent=True,
+        ) or ""
+        remaining_locales = {
+            locale for locale in _parse_apk_locales(rebuilt_info)
+            if not _locale_is_kept(locale, keep)
+        }
+        if remaining_locales:
+            raise RuntimeError(
+                "Locale slimming verification failed; unwanted locales remain: "
+                + ", ".join(sorted(remaining_locales))
+            )
+
+        original_size = apk_path.stat().st_size
+        rebuilt_size = rebuilt_apk.stat().st_size
+        os.replace(rebuilt_apk, apk_path)
+
+    logging.info(
+        "Locale slimmer removed %d resource directories; APK size %d -> %d bytes",
+        removed_directories,
+        original_size,
+        rebuilt_size,
+    )
+    return removed_directories
 
 
 def check_apk_integrity(apk_path: Path) -> bool:

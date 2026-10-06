@@ -279,6 +279,19 @@ def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
 
             logging.info(f"Normalized APK file: {input_apk}")
 
+        # Slim translated resources before applying the arm64 CPU filter.
+        apk_editor = downloader.download_apkeditor()
+        keep_locales = [
+            locale.strip()
+            for locale in getenv("KEEP_LOCALES", "en").split(",")
+            if locale.strip()
+        ]
+        try:
+            utils.slim_apk_locales(input_apk, apk_editor, keep_locales)
+        except Exception:
+            input_apk.unlink(missing_ok=True)
+            raise
+
         # --- ARCHITECTURE-SPECIFIC PROCESSING ---
         logging.info(f"Optimizing APK for arm64-v8a CPU target...")
         utils.strip_zip_entries(

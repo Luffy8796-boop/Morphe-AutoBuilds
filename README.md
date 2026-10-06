@@ -59,7 +59,8 @@ The full list of supported apps lives in [`patch-config.json`](patch-config.json
 This repository utilizes a robust Python-based pipeline to ensure high reliability and optimization.
 
 * **Fully Automated:** GitHub Actions workflow executes daily at 06:00 UTC, requiring zero manual intervention.
-* **Architecture Optimization:** Builds specific `arm64-v8a`, `armeabi-v7a`, and `universal` APKs to reduce file size and improve performance on target devices.
+* **Architecture Optimization:** Builds arm64-v8a APKs and removes other supported CPU architectures to reduce file size.
+* **Locale Slimmer:** Before CPU filtering, rebuilds Android resources to remove translated locales while retaining English and default fallback resources.
 * **Multi-Source Strategy:** Intelligent fetching from APKMirror, APKPure, and Uptodown ensures high success rates even if one source is down.
 * **Granular Patch Control:** Simple text-based configuration allows for precise inclusion or exclusion of specific patches.
 * **Smart Failover:** The system automatically switches download sources if a fetch attempt fails.
@@ -198,6 +199,7 @@ You can build for a specific app and source.
 ```bash
 export APP_NAME="youtube"
 export SOURCE="morphe"
+export KEEP_LOCALES="en,fr"  # Optional; defaults to English only
 python -m src
 
 ```
