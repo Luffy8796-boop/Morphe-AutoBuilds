@@ -13,6 +13,33 @@ from src import (
     downloader
 )
 
+def _normalize_build_arch(arch: str | None) -> str:
+    """Force all builds to the smallest practical ABI: arm64-v8a.
+
+    This keeps builds consistent with the project requirement that APKs are
+    optimized for a single CPU target and stripped of all non-arm64 artifacts.
+    """
+    if not arch:
+        return "arm64-v8a"
+
+    normalized = arch.strip().lower()
+    aliases = {
+        "arm64": "arm64-v8a",
+        "arm64-v8a": "arm64-v8a",
+        "arm64v8a": "arm64-v8a",
+        "arm-v7a": "arm64-v8a",
+        "armeabi-v7a": "arm64-v8a",
+        "armeabi": "arm64-v8a",
+        "armv7": "arm64-v8a",
+        "armv7a": "arm64-v8a",
+        "armv7-abi": "arm64-v8a",
+        "universal": "arm64-v8a",
+        "noarch": "arm64-v8a",
+        "all": "arm64-v8a",
+    }
+    return aliases.get(normalized, normalized)
+
+
 def _should_retry_with_older_version(output: str | None) -> bool:
     """Detect common patterns that indicate the chosen app version is not
     actually compatible with the selected patches (fingerprint mismatch, etc.)."""
@@ -26,8 +53,9 @@ def _should_retry_with_older_version(output: str | None) -> bool:
         or "patching aborted" in t
     )
 
-def run_build(app_name: str, source: str, arch: str = "universal") -> str:
-    """Build APK for specific architecture"""
+def run_build(app_name: str, source: str, arch: str = "arm64-v8a") -> str:
+    """Build APK for the optimized arm64-v8a target."""
+    arch = _normalize_build_arch(arch)
     download_files, name = downloader.download_required(source)
 
     # Log downloaded files for debugging
@@ -252,14 +280,17 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
             logging.info(f"Normalized APK file: {input_apk}")
 
         # --- ARCHITECTURE-SPECIFIC PROCESSING ---
-        if arch != "universal":
-            logging.info(f"Processing APK for {arch} architecture...")
-            if arch == "arm64-v8a":
-                utils.strip_zip_entries(input_apk, ["lib/x86/*", "lib/x86_64/*", "lib/armeabi-v7a/*"])
-            elif arch == "armeabi-v7a":
-                utils.strip_zip_entries(input_apk, ["lib/x86/*", "lib/x86_64/*", "lib/arm64-v8a/*"])
-        else:
-            utils.strip_zip_entries(input_apk, ["lib/x86/*", "lib/x86_64/*"])
+        logging.info(f"Optimizing APK for arm64-v8a CPU target...")
+        utils.strip_zip_entries(
+            input_apk,
+            [
+                "lib/x86/*",
+                "lib/x86_64/*",
+                "lib/armeabi/*",
+                "lib/armeabi-v7a/*",
+                "lib/arm-linux-androideabi/*",
+            ],
+        )
 
         # Validate APK integrity (safety net: downloads were already validated,
         # but bundle merging / arch stripping can corrupt the file).
@@ -278,7 +309,9 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
                 logging.info("🔧 Using Morphe patching system...")
                 morphe_cmd = [
                     "java", "-jar", str(cli),
-                    "patch", "--patches", str(patches),
+                    "patch",
+                    "--optimize-for-cpu", "arm64-v8a",
+                    "--patches", str(patches),
                     "--out", str(output_apk), str(input_apk),
                     *exclude_patches, *include_patches
                 ]
@@ -361,39 +394,23 @@ def main():
         logging.error("APP_NAME and SOURCE environment variables must be set")
         exit(1)
 
-    # Read arch-config.json
-    arch_config_path = Path("arch-config.json")
-    if arch_config_path.exists():
-        with open(arch_config_path) as f:
-            arch_config = json.load(f)
-        
-        # Find arches for this app
-        arches = [(getenv("ARCH") or "universal").strip()]
-        for config in arch_config:
-            if not getenv("ARCH") and config["app_name"] == app_name and config["source"] == source:
-                arches = config["arches"]
-                break
-        
-        # Build for each architecture
-        built_apks = []
-        for arch in arches:
-            logging.info(f"🔨 Building {app_name} for {arch} architecture...")
-            apk_path = run_build(app_name, source, arch)
-            if apk_path:
-                built_apks.append(apk_path)
-                print(f"✅ Built {arch} version: {Path(apk_path).name}")
-        
-        # Summary
-        print(f"\n🎯 Built {len(built_apks)} APK(s) for {app_name}:")
-        for apk in built_apks:
-            print(f"  📱 {Path(apk).name}")
-        
-    else:
-        # Fallback to single universal build
-        logging.warning("arch-config.json not found, building universal only")
-        apk_path = run_build(app_name, source, "universal")
+    requested_arch = _normalize_build_arch(getenv("ARCH"))
+    arches = [requested_arch]
+
+    # Always prefer a single optimized arm64-v8a build. The previous multi-arch
+    # config is intentionally ignored to keep output size and compatibility
+    # focused on the target device ABI.
+    built_apks = []
+    for arch in arches:
+        logging.info(f"🔨 Building {app_name} for {arch} architecture...")
+        apk_path = run_build(app_name, source, arch)
         if apk_path:
-            print(f"🎯 Final APK path: {apk_path}")
+            built_apks.append(apk_path)
+            print(f"✅ Built {arch} version: {Path(apk_path).name}")
+
+    print(f"\n🎯 Built {len(built_apks)} APK(s) for {app_name}:")
+    for apk in built_apks:
+        print(f"  📱 {Path(apk).name}")
 
 if __name__ == "__main__":
     main()
