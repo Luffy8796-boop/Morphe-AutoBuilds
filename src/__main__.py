@@ -327,7 +327,7 @@ def run_build(
                 morphe_cmd = [
                     "java", "-jar", str(cli),
                     "patch",
-                    "--optimize-for-cpu", "arm64-v8a",
+                    "--striplibs=arm64-v8a",
                     "--patches", str(patches),
                     "--out", str(output_apk), str(input_apk),
                     *exclude_patches, *include_patches
