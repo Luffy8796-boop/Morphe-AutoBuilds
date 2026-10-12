@@ -41,8 +41,7 @@ def _normalize_source_arch(arch: str | None) -> str:
 
 
 def _should_retry_with_older_version(output: str | None) -> bool:
-    """Detect common patterns that indicate the chosen app version is not
-    actually compatible with the selected patches (fingerprint mismatch, etc.)."""
+    """Detect failures likely caused by the selected APK version."""
     if not output:
         return False
     t = output.lower()
@@ -51,6 +50,11 @@ def _should_retry_with_older_version(output: str | None) -> bool:
         or "patch.patchexception" in t
         or ("fingerprint" in t and "failed" in t)
         or "patching aborted" in t
+        or (
+            "xmlpullparserexception" in t
+            and "name expected" in t
+            and ("stringsxmlprocessor" in t or "sanitizing unpatched strings" in t)
+        )
     )
 
 _APPLYING_ZERO_PATCHES = re.compile(r"applying\s+0\s+patches\b", re.IGNORECASE)
