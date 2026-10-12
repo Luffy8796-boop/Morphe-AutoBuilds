@@ -769,29 +769,39 @@ def check_apk_integrity(apk_path: Path) -> bool:
         return False
 
 
-def is_apk_signed(apk_path: Path) -> bool:
-    """Return True if the APK carries an Android signature (v1 or v2+).
+BUNDLE_SUFFIXES = (".xapk", ".apks", ".apkm")
 
-    Checks for v1 (JAR signing) META-INF/*.RSA|*.DSA|*.EC entries first,
-    then looks for an APK Signing Block containing a v2/v3 signature
-    scheme id. Mirrors occasionally serve unsigned or stripped APKs;
-    the patcher rejects those, so detect them here and let the caller
-    try the next download source instead.
-    """
+
+def _is_bundle(path: Path) -> bool:
+    """Return True if the file is an APK bundle (XAPK/APKS/APKM or a zip
+    containing APK files). Bundle containers are not Android-signed; the
+    APK inside is."""
+    if not path or not path.exists():
+        return False
+    if path.suffix.lower() in BUNDLE_SUFFIXES:
+        return True
+    try:
+        if zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path, "r") as archive:
+                return any(name.lower().endswith(".apk") for name in archive.namelist())
+    except Exception:
+        pass
+    return False
+
+
+def is_apk_signed(apk_path: Path) -> bool:
+    """Return True if the APK carries an Android signature (v1 or v2+)."""
     if not apk_path or not apk_path.exists():
         return False
     try:
-        with zipfile.ZipFile(apk_path, 'r') as z:
-            names = z.namelist()
-            for n in names:
-                upper = n.upper()
-                if upper.startswith("META-INF/") and (
-                    upper.endswith(".RSA") or upper.endswith(".DSA") or upper.endswith(".EC")
-                ):
+        with zipfile.ZipFile(apk_path, "r") as archive:
+            for name in archive.namelist():
+                upper = name.upper()
+                if upper.startswith("META-INF/") and upper.endswith((".RSA", ".DSA", ".EC")):
                     return True
     except Exception:
         return False
-    # No v1 signature: look for the APK Signing Block (v2/v3/v3.1).
+
     try:
         import struct
         sig_block_magic = b"APK Sig Block 42"
@@ -836,7 +846,7 @@ def is_apk_signed(apk_path: Path) -> bool:
                 f.seek(skip, 1)
                 remaining -= 12 + skip
     except Exception:
-        pass
+        return False
     return False
 
 
@@ -844,24 +854,21 @@ def ensure_usable_apk(
     apk_path: Path,
     app_name: str,
     version: str,
-    require_signature: bool = True,
+    require_signature: bool = False,
 ) -> Path | None:
-    """Return ``apk_path`` if it passes integrity and optional signature checks.
-
-    Otherwise attempt a ``zip -FF`` repair and re-check.  A file that is
-    still corrupt afterwards, or that carries no Android signature, is
-    deleted and ``None`` is returned so the caller can try another
-    download source instead of feeding a broken APK to the patcher
-    (which crashes with an obscure NPE or rejects unsigned input).
-    """
+    """Validate a downloaded or transformed APK, optionally checking its signature."""
     def _good(path: Path) -> bool:
         if not check_apk_integrity(path):
             return False
-        if require_signature and not is_apk_signed(path):
+        if require_signature and not _is_bundle(path) and not is_apk_signed(path):
             logging.warning(
-                f"APK {path.name} has no Android signature; discarding download")
+                f"APK {path.name} has no Android signature; discarding")
             return False
         return True
+
+    if not apk_path or not apk_path.exists() or apk_path.stat().st_size == 0:
+        logging.warning(f"Download missing or empty for {app_name}; discarding")
+        return None
 
     if _good(apk_path):
         return apk_path
@@ -877,7 +884,9 @@ def ensure_usable_apk(
     try:
         subprocess.run(
             ["zip", "-FF", str(apk_path), "--out", str(fixed_apk)],
-            check=False, capture_output=True, timeout=120,
+            check=False,
+            capture_output=True,
+            timeout=120,
             stdin=subprocess.DEVNULL,
         )
     except subprocess.TimeoutExpired:
@@ -893,7 +902,7 @@ def ensure_usable_apk(
     apk_path.unlink(missing_ok=True)
     fixed_apk.rename(apk_path)
     if _good(apk_path):
-        logging.info("APK repaired successfully and passes integrity and signature checks")
+        logging.info("APK repaired successfully and passes validation")
         return apk_path
 
     logging.warning("APK still fails checks after zip -FF repair; discarding download")

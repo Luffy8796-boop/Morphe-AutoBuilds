@@ -53,6 +53,41 @@ def _should_retry_with_older_version(output: str | None) -> bool:
         or "patching aborted" in t
     )
 
+_APPLYING_ZERO_PATCHES = re.compile(r"applying\s+0\s+patches\b", re.IGNORECASE)
+_FILTERING_PATCHES = re.compile(
+    r"Filtering patches for\s+(\S+)\s+v(\S+(?:\s+build\s+\d+|\s*\(\d+\))?)",
+    re.IGNORECASE,
+)
+_BUILD_SUFFIX = re.compile(r"(?:\s+build\s+\d+|\s*\(\d+\))\s*$", re.IGNORECASE)
+
+
+def _version_without_build(version: str) -> str:
+    """Drop a trailing build number from a version string."""
+    return _BUILD_SUFFIX.sub("", version).strip()
+
+
+def _unpatched_build_reason(output: str | None, downloaded_version: str) -> str | None:
+    """Reject a zero-exit patch run that applied no patches or used another version."""
+    if not output:
+        return None
+
+    if _APPLYING_ZERO_PATCHES.search(output):
+        return (
+            f"Patch CLI applied 0 patches to v{downloaded_version}; "
+            "refusing to sign an unpatched APK"
+        )
+
+    downloaded = utils.normalize_version(_version_without_build(downloaded_version))
+    for match in _FILTERING_PATCHES.finditer(output):
+        package, filtered = match.group(1), match.group(2).strip().rstrip(".")
+        if utils.normalize_version(_version_without_build(filtered)) != downloaded:
+            return (
+                f"Patch CLI filtered {package} v{filtered}, "
+                f"which is not the downloaded v{downloaded_version}"
+            )
+    return None
+
+
 def run_build(
     app_name: str,
     source: str,
@@ -137,11 +172,12 @@ def run_build(
 
     download_methods = [
         downloader.download_apkmirror,
+        downloader.download_apkpure,
         downloader.download_aptoide,
+        downloader.download_uptodown,
+        downloader.download_apkfab,
         downloader.download_github,
         downloader.download_codeberg,
-        downloader.download_uptodown,
-        downloader.download_apkpure,
         downloader.download_apkcombo,
     ]
 
@@ -306,6 +342,8 @@ def run_build(
 
         # Validate APK integrity (safety net: downloads were already validated,
         # but bundle merging / arch stripping can corrupt the file).
+        # Note: Only check integrity here, NOT signature. Merged bundles are
+        # unsigned (APKEditor doesn't sign); the APK gets signed after patching.
         logging.info("Checking APK integrity...")
         input_apk = utils.ensure_usable_apk(
             input_apk,
@@ -320,6 +358,7 @@ def run_build(
         # Include architecture in output filename
         output_apk = Path(f"{app_name}-{arch}-patch-v{version}.apk")
 
+        cli_output = None
         try:
             # USE DIFFERENT COMMANDS BASED ON SOURCE TYPE
             if is_morphe:
@@ -332,7 +371,7 @@ def run_build(
                     "--out", str(output_apk), str(input_apk),
                     *exclude_patches, *include_patches
                 ]
-                utils.run_process(morphe_cmd, capture=True, stream=True)
+                cli_output = utils.run_process(morphe_cmd, capture=True, stream=True)
             else:
                 logging.info("🔧 Using ReVanced patching system...")
                 cli_name = Path(cli).name.lower()
@@ -341,14 +380,14 @@ def run_build(
                 )
 
                 if is_revanced_v6_or_newer:
-                    utils.run_process([
+                    cli_output = utils.run_process([
                         "java", "-jar", str(cli),
                         "patch", "-p", str(patches), "-b",
                         "--out", str(output_apk), str(input_apk),
                         *exclude_patches, *include_patches
                     ], capture=True, stream=True)
                 else:
-                    utils.run_process([
+                    cli_output = utils.run_process([
                         "java", "-jar", str(cli),
                         "patch", "--patches", str(patches),
                         "--out", str(output_apk), str(input_apk),
@@ -371,6 +410,15 @@ def run_build(
         except Exception:
             output_apk.unlink(missing_ok=True)
             raise
+
+        rejection = _unpatched_build_reason(cli_output, version)
+        if rejection:
+            logging.error(f"❌ {rejection}")
+            input_apk.unlink(missing_ok=True)
+            output_apk.unlink(missing_ok=True)
+            if attempt_idx < len(versions_to_try) - 1:
+                continue
+            return None
 
         # Patch succeeded -> cleanup input and sign.
         input_apk.unlink(missing_ok=True)
@@ -439,6 +487,6 @@ def main():
     print(f"\n🎯 Built {len(built_apks)} APK(s) for {app_name}:")
     for apk in built_apks:
         print(f"  📱 {Path(apk).name}")
-
-if __name__ == "__main__":
-    main()
+    if not built_apks:
+        logging.error(f"❌ No APKs built for {app_name}; failing the job.")
+        exit(1)

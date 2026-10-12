@@ -94,7 +94,7 @@
     },
     {
       "app_name": "messenger",
-      "source": "devanced"
+      "source": "hushmessenger"
     },
     {
       "app_name": "photomath",
@@ -102,15 +102,11 @@
     },
     {
       "app_name": "pixiv",
-      "source": "devanced"
+      "source": "fripe070"
     },
     {
       "app_name": "prime-video",
       "source": "Hoo"
-    },
-    {
-      "app_name": "proton-mail",
-      "source": "hxreborn"
     },
     {
       "app_name": "proton-vpn",
@@ -145,10 +141,6 @@
       "source": "Hoo"
     },
     {
-      "app_name": "number",
-      "source": "revanced-kitadai31"
-    },
-    {
       "app_name": "pandora",
       "source": "Hoo"
     },
@@ -166,7 +158,7 @@
     },
     {
       "app_name": "strava",
-      "source": "devanced"
+      "source": "rushiranpise"
     },
     {
       "app_name": "tumblr",
@@ -201,19 +193,11 @@
       "source": "Hoo"
     },
     {
-      "app_name": "lingory",
-      "source": "Hoo"
-    },
-    {
       "app_name": "teuida",
       "source": "Hoo"
     },
     {
       "app_name": "sofascore",
-      "source": "Hoo"
-    },
-    {
-      "app_name": "ttmik-stories",
       "source": "Hoo"
     },
     {
@@ -318,7 +302,7 @@
     },
     {
       "app_name": "letterboxd",
-      "source": "devanced"
+      "source": "kim20598"
     },
     {
       "app_name": "kakaotalk",
@@ -349,10 +333,6 @@
       "source": "Hoo"
     },
     {
-      "app_name": "ibs_paint",
-      "source": "Hoo"
-    },
-    {
       "app_name": "pokecardex",
       "source": "almewty"
     },
@@ -369,12 +349,28 @@
       "source": "rushiranpise-dev"
     },
     {
+      "app_name": "x",
+      "source": "piko"
+    },
+    {
       "app_name": "x-new",
       "source": "piko-newx"
     },
     {
       "app_name": "gboard",
       "source": "jasonwu1994"
+    },
+    {
+      "app_name": "gboard",
+      "source": "3r01"
+    },
+    {
+      "app_name": "google-photos",
+      "source": "akash-sriram"
+    },
+    {
+      "app_name": "google-maps",
+      "source": "bearinmindcat"
     },
     {
       "app_name": "facebook",
