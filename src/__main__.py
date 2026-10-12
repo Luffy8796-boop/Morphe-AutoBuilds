@@ -490,3 +490,7 @@ def main():
     if not built_apks:
         logging.error(f"❌ No APKs built for {app_name}; failing the job.")
         exit(1)
+
+
+if __name__ == "__main__":
+    main()
