@@ -31,7 +31,7 @@ on:
           - universal
         default: 'universal'
       replace_in_release:
-        description: 'Replace APK in existing release'
+        description: 'Publish APKs to the latest GitHub release'
         required: true
         type: boolean
         default: true
@@ -139,31 +139,37 @@ jobs:
           name: manual-apk-${{ inputs.app_name }}-${{ inputs.architecture }}
           path: "*.apk"
       
-      - name: Install Publisher Dependencies
-        if: ${{ inputs.replace_in_release == true }}
-        run: pip install requests
-
-      - name: Publish to GitLab Releases
+      - name: Publish to GitHub Releases
         if: ${{ inputs.replace_in_release == true }}
         env:
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-          GITLAB_PROJECT_ID: "87288318"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -z "$GITLAB_TOKEN" ]; then
-            echo "GITLAB_TOKEN secret is not set on this repo."
-            exit 1
+          release_tag=latest
+          release_title="Morphe APKs - $(date -u +'%Y-%m-%d %H:%M UTC')"
+
+          if gh release view "$release_tag" >/dev/null 2>&1; then
+            gh release upload "$release_tag" *.apk --clobber
+            gh release edit "$release_tag" --title "$release_title"
+          else
+            gh release create "$release_tag" *.apk \
+              --title "$release_title" \
+              --notes "Manually built APKs for ${{ inputs.app_name }} from ${{ inputs.source }}." \
+              --latest
           fi
-          mkdir -p ./release-apks
-          cp -f *.apk ./release-apks/ 2>/dev/null || true
-          python scripts/gitlab_publish_release.py \
-            --apks-dir ./release-apks \
-            --merge
+
+          printf '%s\n' *.apk > keep_apks.txt
+          python scripts/cleanup_old_apks.py \
+            --release "$release_tag" \
+            --keep-file keep_apks.txt
 
       - name: Publish Summary
         if: ${{ inputs.replace_in_release == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           count=$(ls -1 *.apk 2>/dev/null | wc -l)
-          echo "Published $count APK(s) to the release."
+          release_url=$(gh release view latest --json url --jq .url)
+          echo "Published $count APK(s) to $release_url"
 
       - name: Cleanup Version Override
         if: ${{ inputs.version != '' && always() }}
