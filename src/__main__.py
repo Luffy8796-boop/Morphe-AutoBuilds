@@ -75,6 +75,25 @@ def _unpatched_build_reason(output: str | None, downloaded_version: str) -> str 
     return None
 
 
+def _telegram_api_credential_options(app_name: str, source: str) -> list[str]:
+    if app_name.lower() != "telegram" or source.lower() != "hushtelegram":
+        return []
+
+    api_id = getenv("TELEGRAM_API_ID", "").strip()
+    api_hash = getenv("TELEGRAM_API_HASH", "").strip()
+    if not api_id and not api_hash:
+        return []
+    if not api_id or not api_hash:
+        raise ValueError("Both TELEGRAM_API_ID and TELEGRAM_API_HASH must be set")
+
+    return [
+        "-e",
+        "Use registered Telegram API credentials",
+        f"-OapiId={api_id}",
+        f"-OapiHash={api_hash}",
+    ]
+
+
 def run_build(
     app_name: str,
     source: str,
@@ -84,6 +103,7 @@ def run_build(
     """Build APK for the optimized arm64-v8a target."""
     arch = _normalize_build_arch(arch)
     source_arch = _normalize_source_arch(source_arch or arch)
+    telegram_api_options = _telegram_api_credential_options(app_name, source)
     download_files, name = downloader.download_required(source)
 
     # Log downloaded files for debugging
@@ -226,6 +246,8 @@ def run_build(
                             if opt:
                                 opts.append(f"-O{opt}")
                     include_patches.extend(["-e", name_opts, *opts])
+
+    include_patches.extend(telegram_api_options)
 
     for ver in versions_to_try:
         # --- Normalize/merge input into .apk when needed ---
