@@ -30,6 +30,11 @@ on:
           - armeabi-v7a
           - universal
         default: 'universal'
+      skip_locale_slimming:
+        description: 'Skip APKEditor locale rewriting (diagnose resource decode failures)'
+        required: false
+        type: boolean
+        default: false
       replace_in_release:
         description: 'Publish APKs to the latest GitHub release'
         required: true
@@ -102,6 +107,7 @@ jobs:
           SOURCE: ${{ inputs.source }}
           ARCH: arm64-v8a
           APK_ARCH: ${{ inputs.architecture }}
+          SKIP_LOCALE_SLIMMING: ${{ inputs.skip_locale_slimming }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FLARESOLVERR_URL: http://localhost:8192/v1
         run: |

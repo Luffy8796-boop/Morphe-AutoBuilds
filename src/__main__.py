@@ -40,23 +40,6 @@ def _normalize_source_arch(arch: str | None) -> str:
     return aliases[normalized]
 
 
-def _should_retry_with_older_version(output: str | None) -> bool:
-    """Detect failures likely caused by the selected APK version."""
-    if not output:
-        return False
-    t = output.lower()
-    return (
-        "failed to match the fingerprint" in t
-        or "patch.patchexception" in t
-        or ("fingerprint" in t and "failed" in t)
-        or "patching aborted" in t
-        or (
-            "xmlpullparserexception" in t
-            and "name expected" in t
-            and ("stringsxmlprocessor" in t or "sanitizing unpatched strings" in t)
-        )
-    )
-
 _APPLYING_ZERO_PATCHES = re.compile(r"applying\s+0\s+patches\b", re.IGNORECASE)
 _FILTERING_PATCHES = re.compile(
     r"Filtering patches for\s+(\S+)\s+v(\S+(?:\s+build\s+\d+|\s*\(\d+\))?)",
@@ -192,10 +175,9 @@ def run_build(
 
     input_apk = None
     version = None
-    candidates: list[str] = []
     used_method = None
     for method in download_methods:
-        apk_path, ver, cands = method(app_name, str(cli), str(patches), source_arch)
+        apk_path, ver, _ = method(app_name, str(cli), str(patches), source_arch)
         if not apk_path:
             continue
         # A corrupt download must never reach the patcher: repair it, and if
@@ -204,7 +186,7 @@ def run_build(
         if apk_path is None:
             logging.warning(f"Discarding unusable download from {method.__name__}; trying next source")
             continue
-        input_apk, version, candidates = apk_path, ver, cands
+        input_apk, version = apk_path, ver
         used_method = method
         break
 
@@ -213,12 +195,8 @@ def run_build(
         logging.error("All download sources failed. Skipping this app.")
         return None
 
-    # Try the downloaded version first, then (if available) older compatible
-    # versions from the patch set. This prevents a single bad/overstated
-    # compatibility entry from breaking the whole build.
-    versions_to_try: list[str] = [version]
-    if candidates and version in candidates:
-        versions_to_try += [v for v in candidates if v != version]
+    # Build only the selected compatible version; never silently downgrade.
+    versions_to_try = [version]
 
     exclude_patches = []
     include_patches = []
@@ -244,28 +222,7 @@ def run_build(
                                 opts.append(f"-O{opt}")
                     include_patches.extend(["-e", name_opts, *opts])
 
-    for attempt_idx, ver in enumerate(versions_to_try):
-        if attempt_idx > 0:
-            logging.warning(
-                f"Retrying {app_name}/{source}/{arch} with older version {ver} due to patch failure..."
-            )
-            # Cleanup any previous attempt artifacts.
-            try:
-                input_apk.unlink(missing_ok=True)
-            except Exception:
-                pass
-
-            input_apk, version, _ = used_method(
-                app_name, str(cli), str(patches), source_arch, override_version=ver
-            )
-            if input_apk is None:
-                continue
-            input_apk = utils.ensure_usable_apk(input_apk, app_name, ver)
-            if input_apk is None:
-                logging.warning(f"Re-downloaded APK for {ver} is unusable; trying next version")
-                continue
-            version = ver
-
+    for ver in versions_to_try:
         # --- Normalize/merge input into .apk when needed ---
         if input_apk.suffix != ".apk":
             # Check if it is a split bundle (contains multiple .apk files or is .apkm/.xapk/.apks)
@@ -327,18 +284,24 @@ def run_build(
 
             logging.info(f"Normalized APK file: {input_apk}")
 
-        # Slim translated resources before applying the arm64 CPU filter.
-        apk_editor = downloader.download_apkeditor()
-        keep_locales = [
-            locale.strip()
-            for locale in getenv("KEEP_LOCALES", "en").split(",")
-            if locale.strip()
-        ]
-        try:
-            utils.slim_apk_locales(input_apk, apk_editor, keep_locales)
-        except Exception:
-            input_apk.unlink(missing_ok=True)
-            raise
+        skip_locale_slimming = getenv("SKIP_LOCALE_SLIMMING", "").strip().lower() in {
+            "1", "true", "yes", "on"
+        }
+        if skip_locale_slimming:
+            logging.info("Skipping locale slimming as requested")
+        else:
+            # Slim translated resources before applying the arm64 CPU filter.
+            apk_editor = downloader.download_apkeditor()
+            keep_locales = [
+                locale.strip()
+                for locale in getenv("KEEP_LOCALES", "en").split(",")
+                if locale.strip()
+            ]
+            try:
+                utils.slim_apk_locales(input_apk, apk_editor, keep_locales)
+            except Exception:
+                input_apk.unlink(missing_ok=True)
+                raise
 
         # --- ARCHITECTURE-SPECIFIC PROCESSING ---
         logging.info(f"Optimizing APK for arm64-v8a CPU target...")
@@ -356,7 +319,7 @@ def run_build(
             require_signature=False,
         )
         if input_apk is None:
-            logging.error(f"APK for {app_name} v{version} is corrupt and could not be repaired; trying next version")
+            logging.error(f"APK for {app_name} v{version} is corrupt and could not be repaired; skipping this app")
             continue
 
         # Include architecture in output filename
@@ -403,8 +366,6 @@ def run_build(
             input_apk.unlink(missing_ok=True)
             output_apk.unlink(missing_ok=True)
 
-            if attempt_idx < len(versions_to_try) - 1 and _should_retry_with_older_version(getattr(e, "output", None)):
-                continue
             raise
 
         try:
@@ -420,8 +381,6 @@ def run_build(
             logging.error(f"❌ {rejection}")
             input_apk.unlink(missing_ok=True)
             output_apk.unlink(missing_ok=True)
-            if attempt_idx < len(versions_to_try) - 1:
-                continue
             return None
 
         # Patch succeeded -> cleanup input and sign.
@@ -460,7 +419,7 @@ def run_build(
         print(f"✅ APK built: {signed_apk.name}")
         return str(signed_apk)
 
-    # If we got here, every candidate version failed.
+    # The selected version could not be built.
     return None
 
 def main():

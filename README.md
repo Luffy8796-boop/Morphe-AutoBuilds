@@ -202,6 +202,7 @@ python -m src
 export APP_NAME="youtube"
 export SOURCE="morphe"
 export APK_ARCH="universal"  # Optional source APK variant: arm64-v8a, armeabi-v7a, universal
+export SKIP_LOCALE_SLIMMING="true"  # Optional diagnostic for resource decode failures
 python -m src
 
 ```
@@ -225,6 +226,7 @@ python -m src
 * Target specific apps.
 * Target specific architectures.
 * Force specific APK versions.
+* Optionally skip locale slimming to diagnose APK resource decode failures.
 * Option to update the public release or just build artifacts.
 
 
