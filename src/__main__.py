@@ -168,8 +168,13 @@ def run_build(
         downloader.download_apkcombo,
     ]
 
+    # HushTelegram supports telegram.org's package, provided here by Uptodown.
+    # Do not fall back to APKMirror's Google Play package.
+    if app_name == "telegram" and source.lower() == "hushtelegram":
+        download_methods = [downloader.download_uptodown]
+        logging.info("Telegram with HushTelegram: using Uptodown only")
     # Facebook: Codeberg only. No mirror fallbacks, fail if Codeberg fails.
-    if app_name == "facebook":
+    elif app_name == "facebook":
         download_methods = [downloader.download_codeberg]
         logging.info("Facebook: using Codeberg only (no mirror fallbacks)")
 
