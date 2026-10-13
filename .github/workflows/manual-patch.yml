@@ -111,6 +111,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TELEGRAM_API_ID: ${{ inputs.app_name == 'telegram' && inputs.source == 'hushtelegram' && secrets.TELEGRAM_API_ID || '' }}
           TELEGRAM_API_HASH: ${{ inputs.app_name == 'telegram' && inputs.source == 'hushtelegram' && secrets.TELEGRAM_API_HASH || '' }}
+          TELEGRAM_UPTODOWN_APK_URL: ${{ inputs.app_name == 'telegram' && inputs.source == 'hushtelegram' && secrets.TELEGRAM_UPTODOWN_APK_URL || '' }}
           FLARESOLVERR_URL: http://localhost:8192/v1
         run: |
           echo "🔧 Building ${{ inputs.app_name }} with ${{ inputs.source }} from a ${{ inputs.architecture }} APK; output is arm64-v8a..."

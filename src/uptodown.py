@@ -8,6 +8,7 @@ tried on alternate official locale hosts before treating the app as missing.
 from __future__ import annotations
 
 import logging
+import os
 import re
 from urllib.parse import urljoin, urlparse
 
@@ -207,20 +208,19 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
     if not version:
         return None
 
-    download_urls = config.get("download_urls")
-    if isinstance(download_urls, dict):
-        for configured_version, download_url in download_urls.items():
-            if not _same_version(str(configured_version), version):
-                continue
-            parsed_url = urlparse(download_url) if isinstance(download_url, str) else None
-            if (
-                parsed_url
-                and parsed_url.scheme == "https"
-                and parsed_url.hostname in {"dw.uptodown.com", "dw.uptodown.net"}
-            ):
-                logging.info("Using configured Uptodown URL for %s v%s", app_name, version)
-                return download_url
-            logging.warning("Ignoring invalid configured Uptodown URL for %s v%s", app_name, version)
+    if app_name.lower() == "telegram" and _same_version(version, "13.0.1"):
+        download_url = os.getenv("TELEGRAM_UPTODOWN_APK_URL", "").strip()
+        parsed_url = urlparse(download_url) if download_url else None
+        if (
+            parsed_url
+            and parsed_url.scheme == "https"
+            and parsed_url.hostname in {"dw.uptodown.com", "dw.uptodown.net"}
+            and parsed_url.path.lower().endswith("/telegram-13-0-1.apk")
+        ):
+            logging.info("Using workflow-provided Uptodown URL for %s v%s", app_name, version)
+            return download_url
+        if download_url:
+            logging.warning("Ignoring invalid Telegram Uptodown URL secret")
 
     base_url, listing = _get_app_page(config, "/versions")
     if not listing:
