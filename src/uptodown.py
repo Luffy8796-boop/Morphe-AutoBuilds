@@ -207,6 +207,21 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
     if not version:
         return None
 
+    download_urls = config.get("download_urls")
+    if isinstance(download_urls, dict):
+        for configured_version, download_url in download_urls.items():
+            if not _same_version(str(configured_version), version):
+                continue
+            parsed_url = urlparse(download_url) if isinstance(download_url, str) else None
+            if (
+                parsed_url
+                and parsed_url.scheme == "https"
+                and parsed_url.hostname in {"dw.uptodown.com", "dw.uptodown.net"}
+            ):
+                logging.info("Using configured Uptodown URL for %s v%s", app_name, version)
+                return download_url
+            logging.warning("Ignoring invalid configured Uptodown URL for %s v%s", app_name, version)
+
     base_url, listing = _get_app_page(config, "/versions")
     if not listing:
         return None

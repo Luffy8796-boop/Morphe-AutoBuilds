@@ -1,5 +1,8 @@
 {
     "name": "telegram",
     "package": "org.telegram.messenger.web",
+    "download_urls": {
+        "13.0.1": "https://dw.uptodown.net/dwn/h8M_b0ln12chGindp3NZIRqM2NvDMR1GlgHSetNx0EcGyBjU7E8MuEx5rgb4vvxZkdcIXL0dkghU2FjhRU5FRrp3_IEHHyHBudI8TIoh-GvlCxsZExPiYsFDXFzG7kro/IcwJvhr_YcLzXiaFwHnmEAWKqSr0IjV7XpDVbGR567h1L3z35KxUsT6GvtT9v-QffvXN9vbFdqsjLsgpCAbQrd0FfN12C0zaXOtBXWEHsreInCGdhxWnCnh4Bx620w0p/0_sgtMYsjMoh_wZ5Uofx2O2GcgBcNwvBSXuEHn_Vx07-JnUgmQsBqcJ-hbA2cJ-SlH2Q1Wu6tl30-_RUIvzq2A==/telegram-13-0-1.apk"
+    },
     "version": ""
 }
