@@ -225,6 +225,10 @@
       "source": "paresh"
     },
     {
+      "app_name": "telegram",
+      "source": "hushtelegram"
+    },
+    {
       "app_name": "park4night",
       "source": "brosssh"
     },
