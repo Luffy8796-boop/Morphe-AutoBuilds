@@ -22,7 +22,7 @@
     },
     {
       "app_name": "pinterest",
-      "source": "adobo"
+      "source": "hushpinterest"
     },
     {
       "app_name": "soundcloud",
@@ -363,10 +363,6 @@
     {
       "app_name": "gboard",
       "source": "jasonwu1994"
-    },
-    {
-      "app_name": "gboard",
-      "source": "3r01"
     },
     {
       "app_name": "google-photos",

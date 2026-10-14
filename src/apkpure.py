@@ -143,17 +143,43 @@ def get_download_link(version: str, app_name: str, config: str) -> str:
 
         soup = BeautifulSoup(response.content, "html.parser")
 
+        # 1) Common direct download anchor (id=download_link)
         download_link = soup.find('a', id='download_link')
         if download_link and download_link.get('href'):
             href = download_link['href']
-            if 'd.apkpure.com' in href:
+            # Return any d.apkpure.com link or XAPK-like link
+            if 'd.apkpure.com' in href or '/b/XAPK/' in href or href.lower().endswith(('.xapk', '.zip')):
+                return href
+            # Some pages use relative or intermediate links; still return them to be followed.
+            return href
+
+        # 2) Some pages embed a 'data-href' attribute on the download button/container
+        btn = soup.find(attrs={'data-href': True})
+        if btn:
+            href = btn['data-href']
+            if href:
                 return href
 
+        # 3) Regex search for d.apkpure.com XAPK/APK delivery endpoints
         html = response.text
-        match = re.search(r'href="(https://d\.apkpure\.com/b/(?:XAPK|APK)/[^"]+)"', html)
+        match = re.search(r'href=[\'\"]?(https?://d\.apkpure\.com/b/(?:XAPK|APK)/[^\'\">]+)[\'\">]?', html, flags=re.IGNORECASE)
         if match:
             dl_url = match.group(1).replace("&amp;", "&")
             logging.info(f"APKPure direct link found via regex for {app_name}")
+            return dl_url
+
+        # 4) Regex for direct .xapk/.zip/.apk links sometimes used
+        match = re.search(r'href=[\'\"]?(https?://[^\'\">]+\.(?:xapk|zip|apk))[\'\">]?', html, flags=re.IGNORECASE)
+        if match:
+            dl_url = match.group(1).replace("&amp;", "&")
+            logging.info(f"APKPure direct link found (generic) for {app_name}")
+            return dl_url
+
+        # 5) Some pages render JSON or JS variables with download_url
+        match = re.search(r'download_url["\']?\s*[:=]\s*[\'\"]([^\'\"]+)[\'\"]', html, flags=re.IGNORECASE)
+        if match:
+            dl_url = match.group(1).replace("&amp;", "&")
+            logging.info(f"APKPure download_url found in page for {app_name}")
             return dl_url
 
     except Exception as e:
