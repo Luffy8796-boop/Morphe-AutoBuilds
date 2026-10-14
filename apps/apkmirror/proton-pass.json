@@ -1,0 +1,10 @@
+{
+  "org": "proton-technologies-ag",
+  "name": "proton-pass-password-manager",
+  "release_prefix": "proton-pass-password-manager",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "proton.android.pass",
+  "version": ""
+}
