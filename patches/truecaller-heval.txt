@@ -1,0 +1,13 @@
++ Disable ads
++ Disable telemetry
++ Disable update prompts
++ Enable Premium
++ GmsCore support
++ Hide Assistant tab
++ Hide Blocking tab
++ Hide Premium tab
++ Hide Scam feed
++ Hide family button
++ Restore classic call log
++ Spoof signature
++ Use SMS for verification codes

@@ -375,6 +375,10 @@
     {
       "app_name": "facebook",
       "source": "devanced"
+    },
+    {
+      "app_name": "truecaller",
+      "source": "heval"
     }
   ]
 }
