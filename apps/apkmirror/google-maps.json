@@ -2,9 +2,9 @@
     "org": "google-inc",
     "name": "maps",
     "release_prefix": "google-maps",
-    "type": "APK",
+    "type": "BUNDLE",
     "arch": "universal",
-    "dpi": "nodpi",
+    "dpi": "480-640dpi",
     "package": "com.google.android.apps.maps",
-    "version": ""
+    "version": "26.36.04.973607363"
 }
