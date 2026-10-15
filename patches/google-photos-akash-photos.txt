@@ -1,3 +1,11 @@
-+ Spoof features
++ AMOLED dark theme
++ Account avatar
++ Custom Morphe branding
 + Enable DCIM folders backup control
++ Enable Phenotype flag manager
++ Fix memory style font loading
 + GmsCore support
++ Google One Bento Badge
++ Local creation downloader
++ Model Readiness Gates
++ Spoof features
