@@ -1,2 +1,0 @@
-- AMOLED dark theme
-- Custom accent color
