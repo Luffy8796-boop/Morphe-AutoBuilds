@@ -1,0 +1,10 @@
+{
+  "org": "proton-technologies-ag",
+  "name": "lumo-by-proton",
+  "release_prefix": "lumo-by-proton",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "me.proton.android.lumo",
+  "version": ""
+}
