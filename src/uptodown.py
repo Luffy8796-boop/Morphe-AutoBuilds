@@ -222,6 +222,19 @@ def get_download_link(version: str, app_name: str, config: dict) -> str | None:
         if download_url:
             logging.warning("Ignoring invalid Telegram Uptodown URL secret")
 
+    configured_url = (config.get("download_url") or "").strip()
+    configured_version = (config.get("version") or "").strip()
+    if configured_url and configured_version and _same_version(version, configured_version):
+        parsed = urlparse(configured_url)
+        if (
+            parsed.scheme == "https"
+            and parsed.hostname in {"dw.uptodown.com", "dw.uptodown.net"}
+            and parsed.path.lower().endswith((".apk", ".xapk"))
+        ):
+            logging.info("Using configured Uptodown URL for %s v%s", app_name, version)
+            return configured_url
+        logging.warning("Ignoring invalid configured Uptodown URL for %s", app_name)
+
     base_url, listing = _get_app_page(config, "/versions")
     if not listing:
         return None
