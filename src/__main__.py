@@ -193,6 +193,9 @@ def run_build(
     if app_name == "telegram" and source.lower() == "hushtelegram":
         download_methods = [downloader.download_uptodown]
         logging.info("Telegram with HushTelegram: using Uptodown only")
+    elif app_name == "proton-mail":
+        download_methods = [downloader.download_uptodown]
+        logging.info("Proton Mail: using Uptodown only")
     # Facebook: Codeberg only. No mirror fallbacks, fail if Codeberg fails.
     elif app_name == "facebook":
         download_methods = [downloader.download_codeberg]
@@ -311,10 +314,13 @@ def run_build(
 
             logging.info(f"Normalized APK file: {input_apk}")
 
+        preserve_source_signature = app_name == "proton-mail"
         skip_locale_slimming = getenv("SKIP_LOCALE_SLIMMING", "").strip().lower() in {
             "1", "true", "yes", "on"
         }
-        if skip_locale_slimming:
+        if preserve_source_signature:
+            logging.info("Skipping locale slimming for Proton Mail to preserve its source signature")
+        elif skip_locale_slimming:
             logging.info("Skipping locale slimming as requested")
         else:
             # Slim translated resources before applying the arm64 CPU filter.
@@ -332,7 +338,10 @@ def run_build(
 
         # --- ARCHITECTURE-SPECIFIC PROCESSING ---
         logging.info(f"Optimizing APK for arm64-v8a CPU target...")
-        utils.strip_non_arm64_libraries(input_apk)
+        if preserve_source_signature:
+            logging.info("Skipping pre-patch ABI stripping for Proton Mail to preserve its source signature")
+        else:
+            utils.strip_non_arm64_libraries(input_apk)
 
         # Validate APK integrity (safety net: downloads were already validated,
         # but bundle merging / arch stripping can corrupt the file).
