@@ -1,0 +1,20 @@
+[
+  {
+    "name": "gboard-combined"
+  },
+  {
+    "user": "MorpheApp",
+    "repo": "morphe-cli",
+    "tag": "latest"
+  },
+  {
+    "user": "jasonwu1994",
+    "repo": "Gboard-patches",
+    "tag": "latest"
+  },
+  {
+    "user": "Entree3k",
+    "repo": "Morning-Entree-Patches",
+    "tag": "latest"
+  }
+]

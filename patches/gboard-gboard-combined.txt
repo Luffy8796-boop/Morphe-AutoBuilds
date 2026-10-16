@@ -1,0 +1,4 @@
++ Block tracking and analytics {isWildcard=true}
++ Disable telemetry & federated learning
++ Network privacy {gboardNetworkLevel=lockdown, isWildcard=true}
++ Remove promotional banners

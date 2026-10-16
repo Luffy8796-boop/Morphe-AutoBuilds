@@ -151,10 +151,10 @@ def run_build(
         
         if not cli:
             cli = utils.find_file(download_files, suffix=".jar")
+        patch_bundles = [file for file in download_files if file.suffix.lower() == ".mpp"]
         patches = utils.find_file(download_files, contains="patches", suffix=".mpp")
         if not patches:
-            # Fallback to any .mpp file
-            patches = utils.find_file(download_files, suffix=".mpp")
+            patches = patch_bundles[0] if patch_bundles else None
     else:
         # Find ReVanced files
         cli = utils.find_file(download_files, contains="revanced-cli", suffix=".jar")
@@ -175,7 +175,7 @@ def run_build(
         return None
 
     logging.info(f"✅ Using CLI: {cli.name}")
-    logging.info(f"✅ Using patches: {patches.name}")
+    logging.info(f"✅ Using patches: {', '.join(file.name for file in (patch_bundles if is_morphe else [patches]))}")
 
     download_methods = [
         downloader.download_apkmirror,
@@ -370,10 +370,13 @@ def run_build(
                     "java", "-jar", str(cli),
                     "patch",
                     "--striplibs=arm64-v8a",
-                    "--patches", str(patches),
+                ]
+                for patch_bundle in patch_bundles:
+                    morphe_cmd.extend(["--patches", str(patch_bundle)])
+                morphe_cmd.extend([
                     "--out", str(output_apk), str(input_apk),
                     *exclude_patches, *include_patches
-                ]
+                ])
                 cli_output = utils.run_process(morphe_cmd, capture=True, stream=True)
             else:
                 logging.info("🔧 Using ReVanced patching system...")
