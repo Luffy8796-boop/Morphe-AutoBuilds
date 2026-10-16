@@ -1,0 +1,10 @@
+{
+  "org": "mega-ltd",
+  "name": "mega-official",
+  "release_prefix": "mega",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "mega.privacy.android.app",
+  "version": ""
+}
