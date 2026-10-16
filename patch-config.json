@@ -379,6 +379,10 @@
     {
       "app_name": "truecaller",
       "source": "heval"
+    },
+    {
+      "app_name": "discord",
+      "source": "venus"
     }
   ]
 }
