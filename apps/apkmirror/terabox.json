@@ -1,0 +1,10 @@
+{
+  "org": "flextech-inc",
+  "name": "terabox-cloud-storage-cloud-backup-data-backup",
+  "release_prefix": "terabox-1tb-cloud-ai-space",
+  "type": "BUNDLE",
+  "arch": "arm64-v8a + arm-v7a",
+  "dpi": "120-640dpi",
+  "package": "com.dubox.drive",
+  "version": ""
+}
