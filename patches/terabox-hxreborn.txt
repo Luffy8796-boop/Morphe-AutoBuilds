@@ -1,1 +1,7 @@
++ Clone app {packageName=com.dubox.drive.clone1}
++ Hide ads
++ Hide consent form
++ Hide promotions
++ Hide video recommendations
++ Unlock Premium Plus
 - Fix Google login
