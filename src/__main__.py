@@ -378,7 +378,6 @@ def run_build(
                 morphe_cmd = [
                     "java", "-jar", str(cli),
                     "patch",
-                    "--striplibs=arm64-v8a",
                 ]
                 for patch_bundle in patch_bundles:
                     morphe_cmd.extend(["--patches", str(patch_bundle)])
