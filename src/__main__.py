@@ -142,6 +142,12 @@ def run_build(
 
     logging.info(f"🔍 Detected: {'Morphe' if is_morphe else 'ReVanced'} source type")
 
+    # TeraBox's signature-dependent patches need the signed base APK from the
+    # original bundle, so let Morphe Desktop merge and extract it itself.
+    preserve_bundle_signature = (
+        app_name == "terabox" and input_apk.suffix.lower() in {".apkm", ".xapk", ".apks"}
+    )
+
     # FIND FILES BASED ON DETECTED TYPE
     if is_morphe:
         # Find Morphe files - prefer non-dev version
@@ -255,7 +261,7 @@ def run_build(
 
     for ver in versions_to_try:
         # --- Normalize/merge input into .apk when needed ---
-        if input_apk.suffix != ".apk":
+        if input_apk.suffix != ".apk" and not preserve_bundle_signature:
             # Check if it is a split bundle (contains multiple .apk files or is .apkm/.xapk/.apks)
             is_bundle = False
             try:
@@ -314,8 +320,10 @@ def run_build(
                 input_apk = clean_apk
 
             logging.info(f"Normalized APK file: {input_apk}")
+        elif preserve_bundle_signature:
+            logging.info("Passing the untouched TeraBox bundle to Morphe to preserve its base APK signature")
 
-        preserve_source_signature = app_name == "proton-mail"
+        preserve_source_signature = app_name == "proton-mail" or preserve_bundle_signature
         skip_locale_slimming = getenv("SKIP_LOCALE_SLIMMING", "").strip().lower() in {
             "1", "true", "yes", "on"
         }
