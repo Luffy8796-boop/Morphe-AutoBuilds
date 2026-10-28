@@ -177,6 +177,11 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           GITLAB_PROJECT_ID: "87288318"
         run: |
+          if [ -z "$GITLAB_TOKEN" ]; then
+            echo "::notice::Skipping GitLab release health check because GITLAB_TOKEN is not configured."
+            exit 0
+          fi
+
           # Safety net for the 2026-10-09 / 2026-10-22 failure mode: if the
           # publish step died after the tag move, GitLab is left with the tag
           # but zero releases, and the store shows every patched app as
