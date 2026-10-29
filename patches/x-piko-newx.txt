@@ -1,6 +1,50 @@
++ NewX: Remove ads
++ NewX: Disable blur effects
 + NewX: Restore Twitter branding
 + NewX: Browse tweet object
++ NewX: Open canonical URLs
 + NewX: Clone
++ NewX: Crash logs
++ NewX: Custom font
++ NewX: Custom sharing domain
++ NewX: Customize drawer items
++ NewX: Theme
++ NewX: Feature switch overrides
++ NewX: Enable quality-of-life feature flags
++ NewX: Customize inline actions
++ NewX: Inline download button
++ NewX: Redirect downloads to chosen folder
++ NewX: Log HLS audio renditions
++ NewX: Customize media menu items
++ NewX: Set default media tab
++ NewX: Gallery profile Photos tab
++ NewX: Customize navigation bar
++ NewX: Hide post author actions
++ NewX: Hide post reply bar
++ NewX: Customize post menu items
++ NewX: Set default profile post sorting
++ NewX: Customize profile tabs
++ NewX: Set default reply sorting
 + NewX: Server error logging
-+ NewX: Share post as image
++ NewX: Disable video player scrolling
++ NewX: Hide premium upsell
++ NewX: Unlock color customization
++ NewX: Unlock downloads
++ NewX: Customize timeline tabs
++ NewX: Disable automatic timeline refresh
++ NewX: Filter For You by topic
++ NewX: Hide AI-generated posts
++ NewX: Hide Discover more
++ NewX: Hide compose button
++ NewX: Hide new posts pill
 + NewX: Hide post dividers
++ NewX: Hide Spaces bar
++ NewX: Hide timeline tabs bar
++ NewX: Hide who to follow
++ NewX: Restore pinned home tab
++ NewX: Restore timeline position
++ NewX: Show poll results
++ NewX: Show sensitive media
++ NewX: Hide posts by verified account type
++ NewX: Filter posts by keyword
++ NewX: Translator
