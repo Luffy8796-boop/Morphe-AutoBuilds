@@ -40,7 +40,7 @@ A sophisticated, automated pipeline that assembles installable Android applicati
 
 ### 📱 Supported Apps & Architectures
 
-The full list of supported apps lives in [`patch-config.json`](patch-config.json) (96 apps and growing). Each app can target `arm64-v8a`, `armeabi-v7a`, and/or `universal` builds, configured in [`arch-config.json`](arch-config.json). Brave Nightly uses the [dh6k Morphe patch source](https://github.com/dh6k/morphe-patches) and automatically rebuilds when APKMirror publishes a newer version.
+The full list of supported apps lives in [`patch-config.json`](patch-config.json) (97 apps and growing). Each app can target `arm64-v8a`, `armeabi-v7a`, and/or `universal` builds, configured in [`arch-config.json`](arch-config.json). Brave Nightly uses the [dh6k Morphe patch source](https://github.com/dh6k/morphe-patches) and automatically rebuilds when APKMirror publishes a newer version. Blockit uses the hxreborn Morphe patches via APKPure.
 
 *( Legend: ✅ = Available / ❌ = Not configured )*
 

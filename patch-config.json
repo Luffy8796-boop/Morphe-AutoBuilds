@@ -1,6 +1,10 @@
 {
   "patch_list": [
     {
+      "app_name": "blockit",
+      "source": "hxreborn"
+    },
+    {
       "app_name": "brave-nightly",
       "source": "dh6k"
     },
