@@ -843,7 +843,9 @@ def plan_incremental(full_matrix: List[dict], old_manifest: Optional[dict],
         arch = entry["arch"]
         mkey = make_manifest_key(app, src, arch)
 
-        cur_app_ver = load_app_config_version(app)            # '' if 'latest'
+        app_config, _ = load_app_config(app)
+        cur_app_ver = (app_config.get("version") or "").strip() if app_config else ""
+        track_latest = bool(app_config and app_config.get("track_latest"))
         cur_src_sig = get_source_signature(src)
         old = old_entries.get(mkey)
         old_src_sig = (old or {}).get("source_sig", "")
@@ -896,11 +898,10 @@ def plan_incremental(full_matrix: List[dict], old_manifest: Optional[dict],
             # config version). When config_version is empty, the config_version
             # compare above can never fire.
             #
-            # We ONLY flag a rebuild when the patches-list asset provides a
-            # concrete recommended version that is strictly newer than what was
-            # previously built.  This mirrors the builder's `list-versions`
-            # selection so the planner can only ever flag a rebuild whose result
-            # would actually differ from the APK already shipped.
+            # By default, only rebuild for a concrete patch-recommended version:
+            # the builder and planner must agree on what the patch set supports.
+            # Explicitly version-agnostic sources may opt into tracking the
+            # provider's latest version with `track_latest` in the app config.
             #
             # IMPORTANT: If the recommended probe returns empty (which happens
             # for ALL Morphe-ecosystem sources — they publish .mpp binaries, not
@@ -916,7 +917,18 @@ def plan_incremental(full_matrix: List[dict], old_manifest: Optional[dict],
             # When the patch repo publishes a genuinely new release that adds
             # support for a newer app version, the SOURCE SIGNATURE changes
             # (line 850-851 above), which already triggers the rebuild.
-            if not cur_app_ver and old_built_ver:
+            if not cur_app_ver and old_built_ver and track_latest:
+                target_ver = fetch_latest_app_version(app)
+                if target_ver and _is_newer_version(target_ver, old_built_ver):
+                    reasons.append(
+                        f"new-version: published {old_built_ver!r} -> {target_ver!r}"
+                    )
+                elif not target_ver:
+                    logging.debug(
+                        f"  {app}/{src}: latest provider version unavailable; "
+                        "relying on source-signature for rebuild detection"
+                    )
+            elif not cur_app_ver and old_built_ver:
                 target_ver = fetch_recommended_version(app, src)
                 if target_ver and _is_newer_version(target_ver, old_built_ver):
                     reasons.append(

@@ -1,0 +1,4 @@
++ Brave AMOLED theme
++ Brave NTP four-column tiles
++ Brave Origin
++ Brave Startup Performance Optimization

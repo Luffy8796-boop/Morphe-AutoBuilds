@@ -1,6 +1,10 @@
 {
   "patch_list": [
     {
+      "app_name": "brave-nightly",
+      "source": "dh6k"
+    },
+    {
       "app_name": "tiktok",
       "source": "icysymmetra"
     },
