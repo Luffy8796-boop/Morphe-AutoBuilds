@@ -481,7 +481,12 @@ def run_build(
         if app_name in ("tiktok", "twitter", "x-new"):
             from src.play_updates import disable_play_store_updates
             disable_play_store_updates(output_apk)
-            zipalign = shutil.which("zipalign") or str(Path(apksigner).with_name("zipalign"))
+            candidate_zipalign = (
+                Path(apksigner).with_name("zipalign.exe")
+                if Path(apksigner).with_name("zipalign.exe").exists()
+                else Path(apksigner).with_name("zipalign")
+            )
+            zipalign = shutil.which("zipalign") or str(candidate_zipalign)
             aligned_apk = output_apk.with_suffix(".aligned.apk")
             utils.run_process([zipalign, "-f", "-P", "16", "4", str(output_apk), str(aligned_apk)])
             aligned_apk.replace(output_apk)

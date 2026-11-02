@@ -101,6 +101,11 @@ def find_apksigner() -> str | None:
         "/usr/local/lib/android/sdk",  # GitHub Actions runner default
         os.environ.get("ANDROID_HOME"),
         os.environ.get("ANDROID_SDK_ROOT"),
+        (
+            str(Path(os.environ["LOCALAPPDATA"]) / "Android" / "Sdk")
+            if os.environ.get("LOCALAPPDATA")
+            else None
+        ),
     ]
 
     for root in sdk_roots:
@@ -111,9 +116,10 @@ def find_apksigner() -> str | None:
             continue
         versions = sorted(build_tools_dir.iterdir(), reverse=True)
         for version_dir in versions:
-            apksigner_path = version_dir / "apksigner"
-            if apksigner_path.exists() and apksigner_path.is_file():
-                return str(apksigner_path)
+            for candidate in ("apksigner", "apksigner.bat", "apksigner.exe"):
+                apksigner_path = version_dir / candidate
+                if apksigner_path.exists() and apksigner_path.is_file():
+                    return str(apksigner_path)
 
     logging.error(
         "No apksigner found. Install Android SDK build-tools and either put "

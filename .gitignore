@@ -1,2 +1,7 @@
 __pycache__/
 NUL
+.venv/
+*.apk
+*.jar
+*.tmp*
+build_records/
