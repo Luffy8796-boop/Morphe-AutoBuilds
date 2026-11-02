@@ -1,11 +1,12 @@
 # Repository Rules for Morphe-AutoBuilds
 
-## Branch and Merge Strategy
-- Always fetch updates from `upstream` (`https://github.com/RookieEnough/Morphe-AutoBuilds.git`) and merge directly into `main` for this repository.
-- Do not create detached or separate sync branches unless explicitly requested.
+## Contribution and Pull Request Workflow
+- **Branching**: For any new changes, features, or upstream syncs, always create a dedicated branch (e.g., `sync/upstream-<date>` or `feature/<name>`) from `main`. Do not push directly to `main`.
+- **Identity & Credentials**: Always commit using `bhargavsai04 <bhargavsai2099@gmail.com>` and push via the configured SSH key (`~/.ssh/temp_github_key`).
+- **Pull Requests**: Push the branch to `origin` and open a Pull Request targeting `main`. The user will review and merge it into `main`.
 
 ## Personal Customizations to Always Preserve
-When resolving merge conflicts, always preserve our custom pipeline additions:
+When resolving merge conflicts or updating code, always preserve our custom pipeline additions:
 1. **Target Architecture & Optimization**: Keep builds focused on `arm64-v8a` and retain `utils.strip_non_arm64_libraries()`.
 2. **Locale Slimming**: Retain `utils.slim_apk_locales()` and `KEEP_LOCALES` configuration.
 3. **No Silent Downgrades**: Retain strict version matching (`versions_to_try = [version]`).
