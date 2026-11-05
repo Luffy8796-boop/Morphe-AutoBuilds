@@ -47,6 +47,7 @@ _FILTERING_PATCHES = re.compile(
     re.IGNORECASE,
 )
 _BUILD_SUFFIX = re.compile(r"(?:\s+build\s+\d+|\s*\(\d+\))\s*$", re.IGNORECASE)
+_PATCH_APP_ALIASES = {"x-new": "x"}
 
 
 def _version_without_build(version: str) -> str:
@@ -253,7 +254,8 @@ def run_build(
     exclude_patches = []
     include_patches = []
 
-    patches_path = Path("patches") / f"{app_name}-{source}.txt"
+    patch_app_name = _PATCH_APP_ALIASES.get(app_name, app_name)
+    patches_path = Path("patches") / f"{patch_app_name}-{source}.txt"
     if patches_path.exists():
         with patches_path.open('r') as patches_file:
             for line in patches_file:
